@@ -1,3 +1,4 @@
 <resources>
-    <string name="app_name">WalletConnect</string>
+    <string name="app_name">WalletConnect Sample</string>
+    <string name="qrCode">QrCode</string>
 </resources>

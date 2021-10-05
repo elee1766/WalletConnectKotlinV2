@@ -2,10 +2,22 @@ import org.gradle.kotlin.dsl.DependencyHandlerScope
 
 const val kotlinVersion = "1.5.31"
 
+fun DependencyHandlerScope.ktxCore() {
+    val ktxCoreVersion = "2.3.1"
+    "implementation"("androidx.lifecycle:lifecycle-livedata-ktx:$ktxCoreVersion")
+    "implementation"("androidx.lifecycle:lifecycle-viewmodel-ktx:$ktxCoreVersion")
+    "implementation"("androidx.core:core-ktx:1.6.0")
+}
+
+fun DependencyHandlerScope.navigationComponent() {
+    val navVersion = "2.3.5"
+    "implementation"("androidx.navigation:navigation-fragment-ktx:$navVersion")
+    "implementation"("androidx.navigation:navigation-ui-ktx:$navVersion")
+}
+
 fun DependencyHandlerScope.coroutines() {
     val coroutinesVersion = "1.5.1"
     "implementation"("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
-
     "testImplementation"("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
 }
 
