@@ -3,14 +3,19 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
     tools:context=".scanner.ScannerFragment">
 
-    <TextView
+    <androidx.camera.view.PreviewView
+        android:id="@+id/preview_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:gravity="center"
-        android:text="Scanner Hello"
-        android:textColor="@color/black" />
+        android:layout_gravity="center">
+    </androidx.camera.view.PreviewView>
+
+    <FrameLayout
+        android:background="#295C34A2"
+        android:layout_gravity="center"
+        android:layout_width="300dp"
+        android:layout_height="300dp"/>
 
 </FrameLayout>

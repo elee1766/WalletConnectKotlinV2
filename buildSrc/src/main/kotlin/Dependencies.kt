@@ -2,6 +2,14 @@ import org.gradle.kotlin.dsl.DependencyHandlerScope
 
 const val kotlinVersion = "1.5.31"
 
+fun DependencyHandlerScope.scanner() {
+    val mlKitBarcode = "16.0.1"
+    "implementation"("com.google.mlkit:barcode-scanning:$mlKitBarcode")
+    "implementation"("androidx.camera:camera-camera2:1.1.0-alpha01")
+    "implementation"("androidx.camera:camera-lifecycle:1.1.0-alpha01")
+    "implementation"("androidx.camera:camera-view:1.0.0-alpha21")
+}
+
 fun DependencyHandlerScope.ktxCore() {
     val ktxCoreVersion = "2.3.1"
     "implementation"("androidx.lifecycle:lifecycle-livedata-ktx:$ktxCoreVersion")
