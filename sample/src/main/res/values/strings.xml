@@ -1,4 +1,5 @@
 <resources>
     <string name="app_name">WalletConnect Sample</string>
     <string name="qrCode">QrCode</string>
+    <string name="ok">Ok</string>
 </resources>

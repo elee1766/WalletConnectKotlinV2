@@ -9,13 +9,11 @@
         android:id="@+id/preview_view"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_gravity="center">
-    </androidx.camera.view.PreviewView>
+        android:layout_gravity="center" />
 
     <FrameLayout
-        android:background="#295C34A2"
+        android:layout_width="@dimen/scanner_size"
+        android:layout_height="@dimen/scanner_size"
         android:layout_gravity="center"
-        android:layout_width="300dp"
-        android:layout_height="300dp"/>
-
+        android:background="@color/scanner_face_color" />
 </FrameLayout>
