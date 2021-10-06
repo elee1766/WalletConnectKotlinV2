@@ -21,7 +21,7 @@ object WalletConnectClient {
         // TODO: pass properties to DI framework
     }
 
-    fun pair(pairingParams: ClientTypes.PairParams) {
+    fun pair(pairingParams: ClientTypes.PairParams, response: ClientListeners.Pairing) {
         require(this::pairingEngine.isInitialized) {
             "Initialize must be called prior to pairing"
         }
