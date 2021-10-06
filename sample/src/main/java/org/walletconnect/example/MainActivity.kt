@@ -1,5 +1,7 @@
 package org.walletconnect.example
 
+import android.graphics.Color
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.view.Menu
 import android.view.MenuItem
@@ -13,6 +15,7 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(ActivityMainBinding.inflate(layoutInflater).root)
+        supportActionBar?.setBackgroundDrawable(ColorDrawable(Color.BLUE))
     }
 
     override fun onCreateOptionsMenu(menu: Menu?): Boolean {

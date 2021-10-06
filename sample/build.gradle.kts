@@ -37,7 +37,6 @@ android {
 }
 
 dependencies {
-    implementation("androidx.camera:camera-lifecycle:1.0.2")
     coroutines()
     navigationComponent()
     ktxCore()
