@@ -3,19 +3,27 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/sessionsFragment">
+    app:startDestination="@id/walletFragment">
     <fragment
-        android:id="@+id/sessionsFragment"
-        android:name="org.walletconnect.example.sessions.SessionsFragment"
-        android:label="sessions_fragment"
-        tools:layout="@layout/sessions_fragment">
+        android:id="@+id/walletFragment"
+        android:name="org.walletconnect.example.wallet.WalletFragment"
+        android:label="wallet_fragment"
+        tools:layout="@layout/wallet_fragment">
         <action
             android:id="@+id/action_sessionsFragment_to_scannerFragment"
             app:destination="@id/scannerFragment" />
+        <action
+            android:id="@+id/action_sessionsFragment_to_dappFragment"
+            app:destination="@id/dappFragment" />
     </fragment>
     <fragment
         android:id="@+id/scannerFragment"
-        android:name="org.walletconnect.example.scanner.ScannerFragment"
+        android:name="org.walletconnect.example.wallet.scanner.ScannerFragment"
         android:label="scanner_fragment"
         tools:layout="@layout/scanner_fragment" />
+    <fragment
+        android:id="@+id/dappFragment"
+        android:name="org.walletconnect.example.dapp.DappFragment"
+        android:label="fragment_dapp"
+        tools:layout="@layout/fragment_dapp" />
 </navigation>

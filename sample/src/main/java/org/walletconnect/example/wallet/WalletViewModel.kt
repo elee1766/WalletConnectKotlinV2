@@ -1,15 +1,14 @@
-package org.walletconnect.example.scanner
+package org.walletconnect.example.wallet
 
 import android.app.Application
-import android.util.Log
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import java.util.concurrent.ExecutionException
 
-class ScannerViewModel(application: Application) : AndroidViewModel(application) {
+class WalletViewModel(application: Application) : AndroidViewModel(application) {
+
     private var cameraProviderLiveData = MutableLiveData<ProcessCameraProvider>()
     val processCameraProvider: LiveData<ProcessCameraProvider>
         get() {
@@ -20,4 +19,7 @@ class ScannerViewModel(application: Application) : AndroidViewModel(application)
             )
             return cameraProviderLiveData
         }
+
+
+
 }

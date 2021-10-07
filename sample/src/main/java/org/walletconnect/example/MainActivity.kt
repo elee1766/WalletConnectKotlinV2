@@ -14,6 +14,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        setContentView(R.layout.activity_main)
         setContentView(ActivityMainBinding.inflate(layoutInflater).root)
         supportActionBar?.setBackgroundDrawable(ColorDrawable(Color.BLUE))
     }
@@ -33,8 +34,8 @@ class MainActivity : AppCompatActivity() {
     override fun onPrepareOptionsMenu(menu: Menu?): Boolean {
         when (getCurrentDestination()?.id) {
             R.id.scannerFragment -> menu?.findItem(R.id.qrCodeScanner)?.isVisible = false
-            R.id.sessionsFragment -> menu?.findItem(R.id.qrCodeScanner)?.isVisible = true
+            R.id.walletFragment -> menu?.findItem(R.id.qrCodeScanner)?.isVisible = true
         }
         return super.onPrepareOptionsMenu(menu)
     }
-}
+} 

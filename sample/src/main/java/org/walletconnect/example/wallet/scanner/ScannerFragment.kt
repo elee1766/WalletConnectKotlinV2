@@ -1,4 +1,4 @@
-package org.walletconnect.example.scanner
+package org.walletconnect.example.wallet.scanner
 
 import android.Manifest
 import android.annotation.SuppressLint
@@ -15,7 +15,7 @@ import androidx.camera.core.Preview
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.ViewModelProvider
+import androidx.fragment.app.activityViewModels
 import com.google.mlkit.vision.barcode.Barcode
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
@@ -23,12 +23,13 @@ import com.google.mlkit.vision.barcode.BarcodeScanning
 import com.google.mlkit.vision.common.InputImage
 import org.walletconnect.example.R
 import org.walletconnect.example.databinding.ScannerFragmentBinding
+import org.walletconnect.example.wallet.WalletViewModel
 import java.util.concurrent.Executors
 
 class ScannerFragment : Fragment(R.layout.scanner_fragment) {
 
     private lateinit var binding: ScannerFragmentBinding
-    private lateinit var viewModel: ScannerViewModel
+    private val viewModel: WalletViewModel by activityViewModels()
 
     private var cameraProvider: ProcessCameraProvider? = null
     private var cameraSelector: CameraSelector? = null
@@ -39,10 +40,6 @@ class ScannerFragment : Fragment(R.layout.scanner_fragment) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = ScannerFragmentBinding.bind(view)
-        viewModel = ViewModelProvider(
-            this, ViewModelProvider.AndroidViewModelFactory
-                .getInstance(requireActivity().application)
-        ).get(ScannerViewModel::class.java)
         activity?.invalidateOptionsMenu()
         setupCamera()
     }
@@ -54,15 +51,9 @@ class ScannerFragment : Fragment(R.layout.scanner_fragment) {
     }
 
     private val cameraPermissionCallback =
-        registerForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { map ->
-            map.entries.forEach { entry ->
-                when (entry.key) {
-                    Manifest.permission.CAMERA ->{
-                        if (entry.value){
-                            bindCameraUseCases()
-                        }
-                    }
-                }
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                bindCameraUseCases()
             }
         }
 
@@ -74,11 +65,10 @@ class ScannerFragment : Fragment(R.layout.scanner_fragment) {
                 if (isCameraPermissionGranted()) {
                     bindCameraUseCases()
                 } else {
-                    cameraPermissionCallback.launch(arrayOf(Manifest.permission.CAMERA))
+                    cameraPermissionCallback.launch(Manifest.permission.CAMERA)
                 }
             })
     }
-
 
     private fun bindCameraUseCases() {
         bindPreviewUseCase()

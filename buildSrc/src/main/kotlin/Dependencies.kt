@@ -2,6 +2,16 @@ import org.gradle.kotlin.dsl.DependencyHandlerScope
 
 const val kotlinVersion = "1.5.31"
 
+fun DependencyHandlerScope.compose() {
+    "implementation"("androidx.navigation:navigation-compose:2.4.0-alpha10")
+    "implementation"("androidx.activity:activity-compose:1.3.1")
+    "implementation"("androidx.compose.material:material:1.0.1")
+    "implementation"("androidx.compose.animation:animation:1.0.1")
+    "implementation"("androidx.compose.ui:ui-tooling:1.0.1")
+    "implementation"("androidx.lifecycle:lifecycle-viewmodel-compose:1.0.0-alpha07")
+    "implementation"("com.google.android.material:compose-theme-adapter:1.0.1")
+}
+
 fun DependencyHandlerScope.scanner() {
     val mlKitBarcode = "16.0.1"
     "implementation"("com.google.mlkit:barcode-scanning:$mlKitBarcode")
