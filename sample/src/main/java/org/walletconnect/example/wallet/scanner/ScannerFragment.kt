@@ -7,7 +7,6 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AlertDialog
 import androidx.camera.core.CameraSelector
 import androidx.camera.core.ImageAnalysis
 import androidx.camera.core.ImageProxy
@@ -42,6 +41,7 @@ class ScannerFragment : Fragment(R.layout.scanner_fragment) {
         binding = ScannerFragmentBinding.bind(view)
         activity?.invalidateOptionsMenu()
         setupCamera()
+        viewModel.hideBottomNav()
     }
 
     private fun setupCamera() {
@@ -126,22 +126,16 @@ class ScannerFragment : Fragment(R.layout.scanner_fragment) {
                 .addOnSuccessListener { barcodes ->
                     if (barcodes.isNotEmpty() && shouldScan) {
                         shouldScan = false
-                        shoDialogWithUrl(barcodes.first().rawValue)
+                        barcodes.first().rawValue?.let {
+                            viewModel.pair(it)
+                            activity?.onBackPressed()
+                        }
+                        shouldScan = true
                     }
                 }
                 .addOnFailureListener { Log.e("Failure", it.message.toString()) }
                 .addOnCompleteListener { imageProxy.close() }
         }
-    }
-
-    private fun shoDialogWithUrl(uri: String?) {
-        AlertDialog.Builder(requireContext())
-            .setMessage(uri)
-            .setPositiveButton(getString(R.string.ok)) { dialog, _ ->
-                shouldScan = true
-                dialog?.dismiss()
-            }
-            .show()
     }
 
     private fun isCameraPermissionGranted(): Boolean =

@@ -7,13 +7,12 @@
     <fragment
         android:id="@+id/walletFragment"
         android:name="org.walletconnect.example.wallet.WalletFragment"
-        android:label="wallet_fragment"
-        tools:layout="@layout/wallet_fragment">
+        android:label="wallet_fragment">
         <action
-            android:id="@+id/action_sessionsFragment_to_scannerFragment"
+            android:id="@+id/action_walletFragment_to_scannerFragment"
             app:destination="@id/scannerFragment" />
         <action
-            android:id="@+id/action_sessionsFragment_to_dappFragment"
+            android:id="@+id/action_walletFragment_to_dappFragment"
             app:destination="@id/dappFragment" />
     </fragment>
     <fragment
@@ -24,6 +23,11 @@
     <fragment
         android:id="@+id/dappFragment"
         android:name="org.walletconnect.example.dapp.DappFragment"
-        android:label="fragment_dapp"
-        tools:layout="@layout/fragment_dapp" />
+        android:label="fragment_dapp">
+        <action
+            android:id="@+id/action_dappFragment_to_walletFragment"
+            app:destination="@id/walletFragment"
+            app:popUpTo="@id/walletFragment"
+            app:popUpToInclusive="true"/>
+    </fragment>
 </navigation>

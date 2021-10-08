@@ -2,14 +2,14 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/identities"
+        android:id="@+id/wallet"
         android:enabled="true"
         android:icon="@drawable/ic_wallet"
         android:title="@string/wallet"
         app:showAsAction="ifRoom" />
 
     <item
-        android:id="@+id/values"
+        android:id="@+id/dapp"
         android:enabled="true"
         android:icon="@drawable/ic_dapp"
         android:title="@string/dapp"

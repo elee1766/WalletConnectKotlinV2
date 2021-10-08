@@ -6,4 +6,9 @@
         android:icon="@drawable/ic_qr_code_scanner"
         android:title="@string/qrCode"
         app:showAsAction="ifRoom" />
+
+    <item
+        android:id="@+id/connect"
+        android:title="@string/connect"
+        app:showAsAction="ifRoom" />
 </menu>
