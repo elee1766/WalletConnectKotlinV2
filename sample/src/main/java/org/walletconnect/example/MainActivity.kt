@@ -50,8 +50,10 @@ class MainActivity : AppCompatActivity() {
     private fun setBottomNavigation() {
         binding.bottomNav.setOnNavigationItemSelectedListener { item ->
             when (item.itemId) {
-                R.id.wallet -> getNavController().navigate(R.id.action_dappFragment_to_walletFragment)
-                R.id.dapp -> getNavController().navigate(R.id.action_walletFragment_to_dappFragment)
+                R.id.wallet -> if (getNavController().currentDestination?.id != R.id.walletFragment)
+                    getNavController().navigate(R.id.action_dappFragment_to_walletFragment)
+                R.id.dapp -> if (getNavController().currentDestination?.id != R.id.dappFragment)
+                    getNavController().navigate(R.id.action_walletFragment_to_dappFragment)
             }
             true
         }
