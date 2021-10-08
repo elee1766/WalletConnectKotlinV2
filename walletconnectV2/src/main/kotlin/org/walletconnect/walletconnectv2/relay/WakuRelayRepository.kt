@@ -13,7 +13,9 @@ import org.walletconnect.walletconnectv2.clientsync.PreSettlementPairing
 import org.walletconnect.walletconnectv2.common.*
 import org.walletconnect.walletconnectv2.common.network.adapters.*
 import org.walletconnect.walletconnectv2.relay.data.RelayService
+import org.walletconnect.walletconnectv2.relay.data.model.Relay
 import org.walletconnect.walletconnectv2.util.adapters.FlowStreamAdapter
+import org.walletconnect.walletconnectv2.util.generateId
 import java.util.concurrent.TimeUnit
 
 class WakuRelayRepository internal constructor(private val useTLs: Boolean, private val hostName: String, private val port: Int) {
@@ -46,17 +48,24 @@ class WakuRelayRepository internal constructor(private val useTLs: Boolean, priv
     private val relay: RelayService by lazy { scarlet.create() }
     //endregion
 
-    val eventsStream = relay.observeEventsStream()
-    val events = relay.observeEvents()
-    val publishResponse = relay.observePublishResponse()
-    val subscribeResponse = relay.observeSubscribeResponse()
+    internal val eventsStream = relay.observeEvents()
+    internal val publishResponse = relay.observePublishResponse()
+    internal val subscribeResponse = relay.observeSubscribeResponse()
     val subscriptionRequest = relay.observeSubscriptionRequest()
     val unsubscribeResponse = relay.observeUnsubscribeResponse()
 
     fun publish(topic: Topic, preSettlementPairingApproval: PreSettlementPairing.Approve) {
         val publishRequest = preSettlementPairingApproval.toRelayPublishRequest(2, topic, moshi)
-        println(publishRequest.toString())
+        println("Publish Request ${moshi.adapter(Relay.Publish.Request::class.java).toJson(publishRequest)}")
         relay.publishRequest(publishRequest)
+    }
+
+    fun subscribe(topic: Topic) {
+        val subscribeRequest = Relay.Subscribe.Request(id = 3, params = Relay.Subscribe.Request.Params(topic))
+        val subscribeRequestJson = moshi.adapter(Relay.Subscribe.Request::class.java).toJson(subscribeRequest)
+        println("Subscribe Request $subscribeRequestJson")
+        relay.subscribeRequest(subscribeRequest)
+//        relay.sendText(subscribeRequestJson)
     }
 
     private fun getServerUrl(): String {

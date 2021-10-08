@@ -298,7 +298,7 @@ internal class RelayTest {
         server = createServer()
         serverEventObserver = server.observeEvents().test()
         client = createClient()
-        clientEventObserver = client.observeEventsStream().test()
+        clientEventObserver = client.observeEvents().test()
     }
 
     private fun createServer(): MockServerService = Scarlet.Builder()

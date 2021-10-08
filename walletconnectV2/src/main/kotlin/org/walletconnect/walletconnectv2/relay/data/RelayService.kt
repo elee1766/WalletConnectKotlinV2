@@ -11,10 +11,7 @@ interface RelayService {
 
     // TODO: Only for tests, find way to extend interface or just create a copy of RelayService in tests and only have Stream
     @Receive
-    fun observeEventsStream(): Stream<WebSocket.Event>
-
-    @Receive
-    fun observeEvents(): Flow<WebSocket.Event>
+    fun observeEvents(): Stream<WebSocket.Event>
 
     @Send
     fun publishRequest(publishRequest: Relay.Publish.Request)
@@ -24,6 +21,9 @@ interface RelayService {
 
     @Send
     fun subscribeRequest(subscribeRequest: Relay.Subscribe.Request)
+
+    @Send
+    fun sendText(message: String)
 
     @Receive
     fun observeSubscribeResponse(): Flow<Relay.Subscribe.Response>

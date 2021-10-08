@@ -1,11 +1,11 @@
 package integration
 
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
+import io.mockk.coVerify
+import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
+import org.junit.jupiter.api.assertTimeout
 import org.walletconnect.walletconnectv2.engine.EngineInteractor
+import java.time.Duration
 
 fun main() {
     val job = SupervisorJob()
@@ -13,15 +13,29 @@ fun main() {
     val engine = EngineInteractor("staging.walletconnect.org?apiKey=c4f79cc821944d9680842e34466bfbd")
     val publishResponse = engine.pairingResponse
     val uri =
-        "wc:3b96370416cb1a17d13f322498f949e9f6d6277674d069b97875a5812af9cc62@2?controller=false&publicKey=685fbc524d9aa33d203919c96dcac2295b5145616dca26d839bbc13b1bf95d77&relay=%7B%22protocol%22%3A%22waku%22%7D"
+        "wc:f06ab27e32969e22d8d2ee912e983b17d8f2f5bff8a31ca2dd301d3c370fd046@2?controller=false&publicKey=577b7214079fb7253973e48a59285103ff22e7916c2a6b80fc7abc417bb65401&relay=%7B%22protocol%22%3A%22waku%22%7D"
 
     scope.launch {
         engine.pair(uri)
 
-        publishResponse.collect {
-            require(it.result) {
-                "Response from Relay returned false"
+        try {
+            withTimeout(Duration.ofSeconds(180).toMillis()) {
+                publishResponse.collect {
+                    println("Publish Acknowledgement: $it")
+                    require(it.result) {
+                        "Response from Relay returned false"
+                    }
+                }
+
+                engine.subscribeResponse.collect {
+                    println("Subscribe Acknowledgement $it")
+                    require(it.result.id.isNotBlank()) {
+                        "Response from Relay returned false"
+                    }
+                }
             }
+        } catch (timeoutException: TimeoutCancellationException) {
+            println("timed out")
         }
     }
 }

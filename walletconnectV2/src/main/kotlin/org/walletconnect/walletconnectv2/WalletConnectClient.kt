@@ -15,8 +15,6 @@ object WalletConnectClient {
     // Inject
     private lateinit var pairingEngine: EngineInteractor
 
-    val publishResponse = pairingEngine.pairingResponse.shareIn(scope, SharingStarted.Lazily)
-
     fun initialize(initialParams: ClientTypes.InitialParams) {
         // TODO: pass properties to DI framework
     }

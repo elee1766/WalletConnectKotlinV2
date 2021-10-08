@@ -13,6 +13,7 @@ import org.walletconnect.walletconnectv2.crypto.data.PublicKey
 import org.walletconnect.walletconnectv2.crypto.managers.LazySodiumCryptoManager
 import org.walletconnect.walletconnectv2.outofband.pairing.proposal.PairingProposedPermissions
 import org.walletconnect.walletconnectv2.relay.WakuRelayRepository
+import org.walletconnect.walletconnectv2.util.generateId
 import java.util.*
 
 class EngineInteractor(hostName: String) {
@@ -33,9 +34,10 @@ class EngineInteractor(hostName: String) {
     private val crypto: CryptoManager = LazySodiumCryptoManager(keyChain)
     //endregion
 
-    private var controller = false
+    private var controller = true
 
-    val pairingResponse = relayRepository.publishResponse
+    internal val pairingResponse = relayRepository.publishResponse
+    internal val subscribeResponse = relayRepository.subscribeResponse
 
     fun pair(uri: String) {
         val pairingProposal = uri.toPairProposal()
@@ -60,6 +62,7 @@ class EngineInteractor(hostName: String) {
             override fun onNext(data: WebSocket.Event) {
                 if (data is WebSocket.Event.OnConnectionOpened<*>) {
                     relayRepository.publish(pairingProposal.topic, preSettlementPairingApprove)
+                    relayRepository.subscribe(settledSequence.settledTopic)
                 }
             }
         })
