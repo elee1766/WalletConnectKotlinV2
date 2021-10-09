@@ -2,14 +2,11 @@ package org.walletconnect.walletconnectv2.relay
 
 import io.mockk.coEvery
 import io.mockk.spyk
-import io.mockk.verify
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flowOf
 import org.json.JSONObject
 import org.junit.Rule
-import org.junit.jupiter.api.AfterEach
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.walletconnect.walletconnectv2.clientsync.PreSettlementPairing
 import org.walletconnect.walletconnectv2.common.Expiry
@@ -32,7 +29,7 @@ internal class WakuRelayRepositoryTest {
     private val sut = spyk(WakuRelayRepository.initRemote(hostName = "127.0.0.1"))
 
     @Test
-    fun `Publish a pairing request, expect a successful response`() {
+    fun `Publish a pairing request, expect a successful acknowledgement`() {
         // Arrange
         val topic = Topic(getRandom64ByteHexString())
         val settledTopic = Topic(getRandom64ByteHexString())
@@ -46,14 +43,14 @@ internal class WakuRelayRepositoryTest {
                 state = PairingState()
             )
         )
-        coEvery { sut.publishResponse } returns flowOf(Relay.Publish.Response(id = preSettlementPairing.id, result = true))
+        coEvery { sut.publishAcknowledgement } returns flowOf(Relay.Publish.Acknowledgement(id = preSettlementPairing.id, result = true))
 
         // Act
         sut.publish(topic, preSettlementPairing)
 
         // Assert
         coroutineTestRule.runTest {
-            sut.publishResponse.collect {
+            sut.publishAcknowledgement.collect {
                 assertEquals(preSettlementPairing.id, it.id)
                 assertEquals(true, it.result)
             }

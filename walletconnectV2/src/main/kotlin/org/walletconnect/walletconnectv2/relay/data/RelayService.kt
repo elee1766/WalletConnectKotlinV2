@@ -17,7 +17,7 @@ interface RelayService {
     fun publishRequest(publishRequest: Relay.Publish.Request)
 
     @Receive
-    fun observePublishResponse(): Flow<Relay.Publish.Response>
+    fun observePublishAcknowledgement(): Flow<Relay.Publish.Acknowledgement>
 
     @Send
     fun subscribeRequest(subscribeRequest: Relay.Subscribe.Request)
@@ -26,17 +26,17 @@ interface RelayService {
     fun sendText(message: String)
 
     @Receive
-    fun observeSubscribeResponse(): Flow<Relay.Subscribe.Response>
+    fun observeSubscribeAcknowledgement(): Flow<Relay.Subscribe.Acknowledgement>
 
     @Receive
     fun observeSubscriptionRequest(): Flow<Relay.Subscription.Request>
 
     @Send
-    fun subscriptionResponse(subscriptionResponse: Relay.Subscription.Response)
+    fun subscriptionAcknowledgement(subscriptionAcknowledgement: Relay.Subscription.Acknowledgement)
 
     @Send
     fun unsubscribeRequest(unsubscribeRequest: Relay.Unsubscribe.Request)
 
     @Receive
-    fun observeUnsubscribeResponse(): Flow<Relay.Unsubscribe.Response>
+    fun observeUnsubscribeAcknowledgement(): Flow<Relay.Unsubscribe.Acknowledgement>
 }

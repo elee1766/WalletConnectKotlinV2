@@ -90,29 +90,27 @@ internal class RelayTest {
         }
 
         @Test
-        fun `Server sends Relay_Publish_Response, should be received by the client`() {
+        fun `Server sends Relay_Publish_Acknowledgement, should be received by the client`() {
             // Arrange
-            val relayPublishResponse = Relay.Publish.Response(
+            val relayPublishAcknowledgement = Relay.Publish.Acknowledgement(
                 id = 1,
                 result = true
             )
-            val clientRelayPublishObserver = client.observePublishResponse()
+            val clientRelayPublishObserver = client.observePublishAcknowledgement()
 
             // Act
-            server.sendPublishResponse(relayPublishResponse)
+            server.sendPublishAcknowledgement(relayPublishAcknowledgement)
 
             // Assert
             clientEventObserver.awaitValues(
                 any<WebSocket.Event.OnConnectionOpened<*>>(),
-                any<WebSocket.Event.OnMessageReceived>().containingRelayObject(relayPublishResponse)
+                any<WebSocket.Event.OnMessageReceived>().containingRelayObject(relayPublishAcknowledgement)
             )
 
             coroutineRule.runTest {
-                val actualPublishResponse = clientRelayPublishObserver.singleOrNull()
-                assertNotNull(actualPublishResponse)
-                assertEquals(relayPublishResponse.id, actualPublishResponse?.id)
-                assertEquals(relayPublishResponse.jsonrpc, actualPublishResponse?.jsonrpc)
-                assertEquals(relayPublishResponse.result, actualPublishResponse?.result)
+                val actualPublishAcknowledgement = clientRelayPublishObserver.singleOrNull()
+                assertNotNull(actualPublishAcknowledgement)
+                assertEquals(relayPublishAcknowledgement, actualPublishAcknowledgement)
             }
         }
     }
@@ -144,26 +142,27 @@ internal class RelayTest {
         }
 
         @Test
-        fun `Server sends Relay_Subscribe_Response, should be received by the client`() {
+        fun `Server sends Relay_Subscribe_Acknowledgement, should be received by the client`() {
             // Arrange
-            val relaySubscribeResponse = Relay.Subscribe.Response(
+            val relaySubscribeAcknowledgement = Relay.Subscribe.Acknowledgement(
                 id = 1,
                 result = SubscriptionId("SubscriptionId 1")
             )
-            val clientRelaySubscribeObserver = client.observeSubscribeResponse()
+            val clientRelaySubscribeObserver = client.observeSubscribeAcknowledgement()
 
             // Act
-            server.sendSubscribeResponse(relaySubscribeResponse)
+            server.sendSubscribeAcknowledgement(relaySubscribeAcknowledgement)
 
             // Assert
             clientEventObserver.awaitValues(
                 any<WebSocket.Event.OnConnectionOpened<*>>(),
-                any<WebSocket.Event.OnMessageReceived>().containingRelayObject(relaySubscribeResponse)
+                any<WebSocket.Event.OnMessageReceived>().containingRelayObject(relaySubscribeAcknowledgement)
             )
 
             coroutineRule.runTest {
-                val actualSubscribeResponse = clientRelaySubscribeObserver.singleOrNull()
-                assertEquals(relaySubscribeResponse, actualSubscribeResponse)
+                val actualSubscribeAcknowledgement = clientRelaySubscribeObserver.singleOrNull()
+                assertNotNull(actualSubscribeAcknowledgement)
+                assertEquals(relaySubscribeAcknowledgement, actualSubscribeAcknowledgement)
             }
         }
     }
@@ -196,28 +195,30 @@ internal class RelayTest {
             )
 
             coroutineRule.runTest {
-                assertEquals(relaySubscriptionRequest, clientRelaySubscriptionObserver.singleOrNull())
+                val actualRelaySubscriptionRequest = clientRelaySubscriptionObserver.singleOrNull()
+                assertNotNull(actualRelaySubscriptionRequest)
+                assertEquals(relaySubscriptionRequest, actualRelaySubscriptionRequest)
             }
         }
 
         @Test
-        fun `Client sends Relay_Subscription_Response, should be received by the server`() {
+        fun `Client sends Relay_Subscription_Acknowledgement, should be received by the server`() {
             // Arrange
-            val relaySubscriptionResponse = Relay.Subscription.Response(
+            val relaySubscriptionAcknowledgement = Relay.Subscription.Acknowledgement(
                 id = 1,
                 result = true
             )
-            val serverRelaySubscriptionObserver = server.observeSubscriptionResponse().test()
+            val serverRelaySubscriptionObserver = server.observeSubscriptionAcknowledgement().test()
 
             // Act
-            client.subscriptionResponse(relaySubscriptionResponse)
+            client.subscriptionAcknowledgement(relaySubscriptionAcknowledgement)
 
             // Assert
             serverEventObserver.awaitValues(
                 any<WebSocket.Event.OnConnectionOpened<*>>(),
-                any<WebSocket.Event.OnMessageReceived>().containingRelayObject(relaySubscriptionResponse)
+                any<WebSocket.Event.OnMessageReceived>().containingRelayObject(relaySubscriptionAcknowledgement)
             )
-            serverRelaySubscriptionObserver.awaitValues(any<Relay.Subscription.Response>())
+            serverRelaySubscriptionObserver.awaitValues(any<Relay.Subscription.Acknowledgement>())
         }
     }
 
@@ -251,26 +252,26 @@ internal class RelayTest {
         }
 
         @Test
-        fun `Server sends Relay_Unsubscribe_Response, should be received by the client`() {
+        fun `Server sends Relay_Unsubscribe_Acknowledgement, should be received by the client`() {
             // Arrange
-            val relayUnsubscribeResponse = Relay.Unsubscribe.Response(
+            val relayUnsubscribeAcknowledgement = Relay.Unsubscribe.Acknowledgement(
                 id = 1,
                 result = true
             )
-            val clientRelayUnsubscribeObserver = client.observeUnsubscribeResponse()
+            val clientRelayUnsubscribeObserver = client.observeUnsubscribeAcknowledgement()
 
             // Act
-            server.sendUnsubscribeResponse(relayUnsubscribeResponse)
+            server.sendUnsubscribeAcknowledgement(relayUnsubscribeAcknowledgement)
 
             // Assert
             clientEventObserver.awaitValues(
                 any<WebSocket.Event.OnConnectionOpened<*>>(),
-                any<WebSocket.Event.OnMessageReceived>().containingRelayObject(relayUnsubscribeResponse)
+                any<WebSocket.Event.OnMessageReceived>().containingRelayObject(relayUnsubscribeAcknowledgement)
             )
 
             coroutineRule.runTest {
-                val actualSubscribeResponse = clientRelayUnsubscribeObserver.singleOrNull()
-                assertEquals(relayUnsubscribeResponse, actualSubscribeResponse)
+                val actualSubscribeAcknowledgement = clientRelayUnsubscribeObserver.singleOrNull()
+                assertEquals(relayUnsubscribeAcknowledgement, actualSubscribeAcknowledgement)
             }
         }
     }
@@ -339,25 +340,25 @@ internal class RelayTest {
         fun observeRelayPublish(): Stream<Relay.Publish.Request>
 
         @Send
-        fun sendPublishResponse(serverResponse: Relay.Publish.Response)
+        fun sendPublishAcknowledgement(serverAcknowledgement: Relay.Publish.Acknowledgement)
 
         @Receive
         fun observeSubscribePublish(): Stream<Relay.Subscribe.Request>
 
         @Send
-        fun sendSubscribeResponse(serverResponse: Relay.Subscribe.Response)
+        fun sendSubscribeAcknowledgement(serverAcknowledgement: Relay.Subscribe.Acknowledgement)
 
         @Send
         fun sendSubscriptionRequest(serverRequest: Relay.Subscription.Request)
 
         @Receive
-        fun observeSubscriptionResponse(): Stream<Relay.Subscription.Response>
+        fun observeSubscriptionAcknowledgement(): Stream<Relay.Subscription.Acknowledgement>
 
         @Receive
         fun observeUnsubscribePublish(): Stream<Relay.Unsubscribe.Request>
 
         @Send
-        fun sendUnsubscribeResponse(serverResponse: Relay.Unsubscribe.Response)
+        fun sendUnsubscribeAcknowledgement(serverAcknowledgement: Relay.Unsubscribe.Acknowledgement)
     }
 
     private inline fun <reified T : Relay> ValueAssert<WebSocket.Event.OnMessageReceived>.containingRelayObject(relayObj: T) = assert {

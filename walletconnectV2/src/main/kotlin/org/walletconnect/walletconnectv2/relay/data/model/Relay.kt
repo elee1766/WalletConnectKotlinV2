@@ -41,7 +41,7 @@ sealed class Relay {
             )
         }
 
-        data class Response(
+        data class Acknowledgement(
             @Json(name = "id")
             override val id: Int,
             @Json(name = "jsonrpc")
@@ -73,7 +73,7 @@ sealed class Relay {
             )
         }
 
-        data class Response(
+        data class Acknowledgement(
             @Json(name = "id")
             override val id: Int,
             @Json(name = "jsonrpc")
@@ -118,7 +118,7 @@ sealed class Relay {
             }
         }
 
-        data class Response(
+        data class Acknowledgement(
             @Json(name = "id")
             override val id: Int,
             @Json(name = "jsonrpc")
@@ -151,7 +151,7 @@ sealed class Relay {
             )
         }
 
-        data class Response(
+        data class Acknowledgement(
             @Json(name = "id")
             override val id: Int,
             @Json(name = "jsonrpc")
