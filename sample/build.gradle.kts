@@ -17,12 +17,7 @@ android {
     }
 
     buildFeatures {
-        compose = true
         viewBinding = true
-    }
-
-    composeOptions {
-        kotlinCompilerExtensionVersion = "1.0.2"
     }
 
     buildTypes {
@@ -44,7 +39,6 @@ android {
 }
 
 dependencies {
-    compose()
     coroutines()
     navigationComponent()
     ktxCore()

@@ -125,12 +125,11 @@ class ScannerFragment : Fragment(R.layout.scanner_fragment) {
             barcodeScanner.process(image)
                 .addOnSuccessListener { barcodes ->
                     if (barcodes.isNotEmpty() && shouldScan) {
-                        shouldScan = false
                         barcodes.first().rawValue?.let {
+                            shouldScan = false
                             viewModel.pair(it)
                             activity?.onBackPressed()
                         }
-                        shouldScan = true
                     }
                 }
                 .addOnFailureListener { Log.e("Failure", it.message.toString()) }

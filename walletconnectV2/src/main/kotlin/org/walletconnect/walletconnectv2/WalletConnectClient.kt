@@ -16,12 +16,16 @@ object WalletConnectClient {
 
     val publishResponse = pairingEngine.pairingResponse.shareIn(scope, SharingStarted.Lazily)
 
-    fun initialize(useTls: Boolean, hostName: String, port: Int) {
+    fun initialize(initialParams: ClientTypes.InitialParams) {
         // TODO: pass properties to DI framework
-        pairingEngine = EngineInteractor()
+        pairingEngine = EngineInteractor(initialParams)
     }
 
-    fun pair(pairingParams: ClientTypes.PairParams) {
+    fun pair(
+        pairingParams: ClientTypes.PairParams,
+        clientListeners: WalletConnectClientListeners.Session
+    ) {
+
         require(this::pairingEngine.isInitialized) {
             "Initialize must be called prior to pairing"
         }
@@ -29,5 +33,9 @@ object WalletConnectClient {
         scope.launch {
             pairingEngine.pair(pairingParams.uri)
         }
+    }
+
+    fun approve() {
+        //todo add logic for approving session proposal
     }
 }

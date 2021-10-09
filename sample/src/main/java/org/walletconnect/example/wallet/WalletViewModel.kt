@@ -1,24 +1,34 @@
 package org.walletconnect.example.wallet
 
 import android.app.Application
-import android.util.Log
 import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.compose.runtime.State
-import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.*
 import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import org.walletconnect.example.R
+import org.walletconnect.example.wallet.ui.*
+import org.walletconnect.walletconnectv2.WalletConnectClient
+import org.walletconnect.walletconnectv2.WalletConnectClientListeners
+import org.walletconnect.walletconnectv2.outofband.client.ClientTypes
 
 class WalletViewModel(application: Application) : AndroidViewModel(application) {
+
+    init {
+//        Initialize SDK with proper parameters
+//        val initParams = ClientTypes.InitialParams(
+//            useTls = true,
+//            hostName = "relay.walletconnect.com",
+//            apiKey = "",
+//            isController = true
+//        )
+//        WalletConnectClient.initialize(initParams)
+    }
 
     private var _eventFlow = MutableSharedFlow<WalletUiEvent>()
     val eventFlow = _eventFlow.asLiveData()
 
-    private var _uiState = mutableStateOf(WalletUiState())
-    val uiState: State<WalletUiState> = _uiState
+    var activeSessions: MutableList<Session> = mutableListOf()
 
     fun hideBottomNav() {
         viewModelScope.launch {
@@ -33,28 +43,33 @@ class WalletViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun pair(uri: String) {
-        //call pair(uri) from SDK and setup listener to get SessionProposal, once SessionProposal is received show proposal dialog
-        viewModelScope.launch {
-            _eventFlow.emit(ShowSessionProposalDialog)
-        }
+// Call pair method from SDK and setup callback for session proposal event. Once it's received show session proposal dialog
+//        val sessionProposalListener = WalletConnectClientListeners.Session { sessionProposal ->
+//
+//        }
+//        val pairingParams = ClientTypes.PairParams(uri = uri)
+//         WalletConnectClient.pair(pairingParams, sessionProposalListener)
 
-        _uiState.value = _uiState.value.copy(
-            proposal = SessionProposal(
-                name = "WalletConnect",
-                icon = R.drawable.ic_walletconnect_circle_blue,
-                uri = "app.walletconnect.org",
-                description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut eu accumsan nunc. Cras luctus, ipsum at tempor vulputate, metus purus mollis ex, ut maximus tellus lectus non nisl. Duis eu diam sollicitudin, bibendum enim ut, elementum erat.",
-                chains = listOf("Ethereum Kovan", "BSC Mainnet", "Fantom Opera"),
-                methods = listOf("personal_sign", "eth_sendTransaction", "eth_signedTypedData")
-            )
+
+
+        //mocked session proposal
+        val sessionProposal = SessionProposal(
+            name = "WalletConnect",
+            icon = R.drawable.ic_walletconnect_circle_blue,
+            uri = "app.walletconnect.org",
+            description = "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut eu accumsan nunc. Cras luctus, ipsum at tempor vulputate, metus purus mollis ex, ut maximus tellus lectus non nisl. Duis eu diam sollicitudin, bibendum enim ut, elementum erat.",
+            chains = listOf("Ethereum Kovan", "BSC Mainnet", "Fantom Opera"),
+            methods = listOf("personal_sign", "eth_sendTransaction", "eth_signedTypedData")
         )
+
+        viewModelScope.launch {
+            _eventFlow.emit(ShowSessionProposalDialog(sessionProposal))
+        }
     }
 
     fun approve() {
-        //call approve() session method from SDK
-        viewModelScope.launch {
-            _eventFlow.emit(HideSessionProposalDialog)
-        }
+//        Call approve method from SDK to approve session proposal
+//        WalletConnectClient.approve()
 
         val session = Session(
             name = "WalletConnect",
@@ -62,16 +77,16 @@ class WalletViewModel(application: Application) : AndroidViewModel(application) 
             icon = R.drawable.ic_walletconnect_circle_blue
         )
 
-        _uiState.value = _uiState.value.copy(
-            sessions = (_uiState.value.sessions + session) as MutableList<Session>
-        )
+        activeSessions = (activeSessions + session) as MutableList<Session>
+
+        //call approve() session method from SDK
+        viewModelScope.launch {
+            _eventFlow.emit(UpdateActiveSessions(activeSessions))
+        }
     }
 
     fun reject() {
         //call reject() session method from SDK
-        viewModelScope.launch {
-            _eventFlow.emit(HideSessionProposalDialog)
-        }
     }
 
     private var cameraProviderLiveData = MutableLiveData<ProcessCameraProvider>()

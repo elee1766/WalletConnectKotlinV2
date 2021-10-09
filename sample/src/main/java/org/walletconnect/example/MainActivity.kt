@@ -11,13 +11,16 @@ import androidx.core.content.ContextCompat
 import org.walletconnect.example.databinding.ActivityMainBinding
 import org.walletconnect.example.extension.getCurrentDestination
 import org.walletconnect.example.extension.getNavController
-import org.walletconnect.example.wallet.ToggleBottomNav
 import org.walletconnect.example.wallet.WalletViewModel
+import org.walletconnect.example.wallet.ui.SessionProposalDialog
+import org.walletconnect.example.wallet.ui.ShowSessionProposalDialog
+import org.walletconnect.example.wallet.ui.ToggleBottomNav
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private val viewModel: WalletViewModel by viewModels()
+    private var sessionProposalDialog: SessionProposalDialog? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,20 +34,29 @@ class MainActivity : AppCompatActivity() {
                 )
             )
         )
-        setUiStateObserver()
-        setBottomNavigation()
-    }
 
-    private fun setUiStateObserver() {
-        viewModel.eventFlow.observe(this, { state ->
-            (state as? ToggleBottomNav)?.apply {
-                if (shouldShown) {
-                    binding.bottomNav.visibility = View.VISIBLE
-                } else {
-                    binding.bottomNav.visibility = View.GONE
+        viewModel.eventFlow.observe(this, { event ->
+            when (event) {
+                is ToggleBottomNav -> {
+                    if (event.shouldShown) {
+                        binding.bottomNav.visibility = View.VISIBLE
+                    } else {
+                        binding.bottomNav.visibility = View.GONE
+                    }
+                }
+                is ShowSessionProposalDialog -> {
+                    sessionProposalDialog = SessionProposalDialog(this, {
+                        viewModel.approve()
+                    }, {
+                        viewModel.reject()
+                    }).apply {
+                        setContent(event.proposal)
+                        show()
+                    }
                 }
             }
         })
+        setBottomNavigation()
     }
 
     private fun setBottomNavigation() {
