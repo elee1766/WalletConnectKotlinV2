@@ -28,19 +28,7 @@ class WalletViewModel(application: Application) : AndroidViewModel(application) 
     private var _eventFlow = MutableSharedFlow<WalletUiEvent>()
     val eventFlow = _eventFlow.asLiveData()
 
-    var activeSessions: MutableList<Session> = mutableListOf()
-
-    fun hideBottomNav() {
-        viewModelScope.launch {
-            _eventFlow.emit(ToggleBottomNav(false))
-        }
-    }
-
-    fun showBottomNav() {
-        viewModelScope.launch {
-            _eventFlow.emit(ToggleBottomNav(true))
-        }
-    }
+    val activeSessions: MutableList<Session> = mutableListOf()
 
     fun pair(uri: String) {
 // Call pair method from SDK and setup callback for session proposal event. Once it's received show session proposal dialog
@@ -77,7 +65,7 @@ class WalletViewModel(application: Application) : AndroidViewModel(application) 
             icon = R.drawable.ic_walletconnect_circle_blue
         )
 
-        activeSessions = (activeSessions + session) as MutableList<Session>
+        activeSessions += session
 
         //call approve() session method from SDK
         viewModelScope.launch {
@@ -88,15 +76,4 @@ class WalletViewModel(application: Application) : AndroidViewModel(application) 
     fun reject() {
         //call reject() session method from SDK
     }
-
-    private var cameraProviderLiveData = MutableLiveData<ProcessCameraProvider>()
-    val processCameraProvider: LiveData<ProcessCameraProvider>
-        get() {
-            val cameraProviderFuture = ProcessCameraProvider.getInstance(getApplication())
-            cameraProviderFuture.addListener(
-                { cameraProviderLiveData.setValue(cameraProviderFuture.get()) },
-                ContextCompat.getMainExecutor(getApplication())
-            )
-            return cameraProviderLiveData
-        }
 }

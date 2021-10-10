@@ -8,16 +8,18 @@ import org.walletconnect.example.databinding.SessionProposalDialogBinding
 class SessionProposalDialog(
     context: Context,
     val approve: () -> Unit,
-    val reject: () -> Unit
+    val reject: () -> Unit,
+    private val proposal: SessionProposal
 ) : BottomSheetDialog(context) {
 
     private val binding = SessionProposalDialogBinding.inflate(layoutInflater)
 
     init {
         setContentView(binding.root)
+        setContent()
     }
 
-    fun setContent(proposal: SessionProposal) = with(binding) {
+    private fun setContent() = with(binding) {
         icon.setImageDrawable(ContextCompat.getDrawable(context, proposal.icon))
         name.text = proposal.name
         uri.text = proposal.uri

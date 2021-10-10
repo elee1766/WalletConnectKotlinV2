@@ -15,6 +15,9 @@ import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.activityViewModels
+import androidx.lifecycle.LiveData
+import androidx.lifecycle.MutableLiveData
+import androidx.navigation.fragment.findNavController
 import com.google.mlkit.vision.barcode.Barcode
 import com.google.mlkit.vision.barcode.BarcodeScanner
 import com.google.mlkit.vision.barcode.BarcodeScannerOptions
@@ -29,6 +32,12 @@ class ScannerFragment : Fragment(R.layout.scanner_fragment) {
 
     private lateinit var binding: ScannerFragmentBinding
     private val viewModel: WalletViewModel by activityViewModels()
+    private val cameraPermissionCallback =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+            if (isGranted) {
+                bindCameraUseCases()
+            }
+        }
 
     private var cameraProvider: ProcessCameraProvider? = null
     private var cameraSelector: CameraSelector? = null
@@ -39,9 +48,7 @@ class ScannerFragment : Fragment(R.layout.scanner_fragment) {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         binding = ScannerFragmentBinding.bind(view)
-        activity?.invalidateOptionsMenu()
         setupCamera()
-        viewModel.hideBottomNav()
     }
 
     private fun setupCamera() {
@@ -50,16 +57,8 @@ class ScannerFragment : Fragment(R.layout.scanner_fragment) {
         setupObserver()
     }
 
-    private val cameraPermissionCallback =
-        registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
-            if (isGranted) {
-                bindCameraUseCases()
-            }
-        }
-
     private fun setupObserver() {
-        viewModel
-            .processCameraProvider
+        getProcessCameraProvider()
             .observe(viewLifecycleOwner, { provider: ProcessCameraProvider ->
                 cameraProvider = provider
                 if (isCameraPermissionGranted()) {
@@ -68,6 +67,16 @@ class ScannerFragment : Fragment(R.layout.scanner_fragment) {
                     cameraPermissionCallback.launch(Manifest.permission.CAMERA)
                 }
             })
+    }
+
+    private fun getProcessCameraProvider(): LiveData<ProcessCameraProvider> {
+        val cameraProviderLiveData = MutableLiveData<ProcessCameraProvider>()
+        val cameraProviderFuture = ProcessCameraProvider.getInstance(requireActivity().application)
+        cameraProviderFuture.addListener(
+            { cameraProviderLiveData.setValue(cameraProviderFuture.get()) },
+            ContextCompat.getMainExecutor(requireActivity().application)
+        )
+        return cameraProviderLiveData
     }
 
     private fun bindCameraUseCases() {
@@ -128,7 +137,7 @@ class ScannerFragment : Fragment(R.layout.scanner_fragment) {
                         barcodes.first().rawValue?.let {
                             shouldScan = false
                             viewModel.pair(it)
-                            activity?.onBackPressed()
+                            findNavController().popBackStack()
                         }
                     }
                 }
