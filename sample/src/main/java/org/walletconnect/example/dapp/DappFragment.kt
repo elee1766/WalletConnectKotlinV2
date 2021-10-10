@@ -1,10 +1,8 @@
 package org.walletconnect.example.dapp
 
 import android.os.Bundle
-import android.util.Log
 import android.view.View
 import androidx.fragment.app.Fragment
-import androidx.navigation.fragment.findNavController
 import org.walletconnect.example.R
 import org.walletconnect.example.databinding.DappFragmentBinding
 

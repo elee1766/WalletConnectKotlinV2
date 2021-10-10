@@ -18,7 +18,7 @@ object WalletConnectClient {
 
     fun initialize(initialParams: ClientTypes.InitialParams) {
         // TODO: pass properties to DI framework
-        pairingEngine = EngineInteractor(initialParams)
+        pairingEngine = EngineInteractor(initialParams.hostName)
     }
 
     fun pair(

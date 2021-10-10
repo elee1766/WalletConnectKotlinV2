@@ -11,10 +11,14 @@ fun DependencyHandlerScope.scanner() {
 }
 
 fun DependencyHandlerScope.ktxCore() {
-    val ktxCoreVersion = "2.3.1"
-    "implementation"("androidx.lifecycle:lifecycle-livedata-ktx:$ktxCoreVersion")
-    "implementation"("androidx.lifecycle:lifecycle-viewmodel-ktx:$ktxCoreVersion")
-    "implementation"("androidx.core:core-ktx:1.6.0")
+    val ktxCoreVersion = "1.6.0"
+    "implementation"("androidx.core:core-ktx:$ktxCoreVersion")
+}
+
+fun DependencyHandlerScope.lifecycle() {
+    val lifecycleVersion = "2.3.1"
+    "implementation"("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion")
+    "implementation"("androidx.lifecycle:lifecycle-viewmodel-ktx:$lifecycleVersion")
 }
 
 fun DependencyHandlerScope.navigationComponent() {
@@ -27,7 +31,6 @@ fun DependencyHandlerScope.coroutines() {
     val coroutinesVersion = "1.5.1"
     "implementation"("org.jetbrains.kotlinx:kotlinx-coroutines-core:$coroutinesVersion")
     "testImplementation"("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
-    "intTestImplementation"("org.jetbrains.kotlinx:kotlinx-coroutines-test:$coroutinesVersion")
 }
 
 fun DependencyHandlerScope.scarlet() {

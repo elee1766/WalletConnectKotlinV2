@@ -16,10 +16,10 @@ import org.walletconnect.walletconnectv2.outofband.pairing.proposal.PairingPropo
 import org.walletconnect.walletconnectv2.relay.WakuRelayRepository
 import java.util.*
 
-class EngineInteractor(initialParams: ClientTypes.InitialParams) {
+class EngineInteractor(hostName: String) {
     //region provide with DI
     // TODO: add logic to check hostName for ws/wss scheme with and without ://
-    private val relayRepository: WakuRelayRepository = WakuRelayRepository.initRemote(hostName = initialParams.hostName, useTLs = initialParams.useTls)
+    private val relayRepository: WakuRelayRepository = WakuRelayRepository.initRemote(hostName = hostName)
     private val keyChain = object : KeyChain {
         val mapOfKeys = mutableMapOf<String, String>()
 
