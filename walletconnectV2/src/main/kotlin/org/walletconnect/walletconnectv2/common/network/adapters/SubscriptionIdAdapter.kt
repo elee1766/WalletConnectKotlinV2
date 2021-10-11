@@ -9,25 +9,18 @@ object SubscriptionIdAdapter: JsonAdapter<SubscriptionId>() {
     @FromJson
     @Qualifier
     override fun fromJson(reader: JsonReader): SubscriptionId? {
+        reader.isLenient = true
         var subscriptionId: String? = null
 
-        reader.jsonObject {
-            while (reader.hasNext()) {
-                when (reader.peek()) {
-                    JsonReader.Token.NAME -> {
-                        if (reader.nextName() == "result") {
-                            subscriptionId = reader.nextString()
-                        } else {
-                            reader.skipValue()
-                        }
-                    }
-                    else -> reader.skipValue()
-                }
+        while (reader.hasNext()) {
+            when (reader.peek()) {
+                JsonReader.Token.STRING -> subscriptionId = reader.nextString()
+                else -> reader.skipValue()
             }
         }
 
         return if (subscriptionId != null) {
-            SubscriptionId(subscriptionId!!)
+            SubscriptionId(subscriptionId)
         } else {
             null
         }

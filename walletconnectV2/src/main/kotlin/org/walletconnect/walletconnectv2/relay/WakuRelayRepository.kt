@@ -64,7 +64,6 @@ class WakuRelayRepository internal constructor(private val useTLs: Boolean, priv
         val subscribeRequestJson = moshi.adapter(Relay.Subscribe.Request::class.java).toJson(subscribeRequest)
         println("Subscribe Request $subscribeRequestJson")
         relay.subscribeRequest(subscribeRequest)
-//        relay.sendText(subscribeRequestJson)
     }
 
     private fun getServerUrl(): String {

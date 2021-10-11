@@ -9,7 +9,6 @@ import org.walletconnect.walletconnectv2.relay.data.model.Relay
 
 interface RelayService {
 
-    // TODO: Only for tests, find way to extend interface or just create a copy of RelayService in tests and only have Stream
     @Receive
     fun observeEvents(): Stream<WebSocket.Event>
 
@@ -21,9 +20,6 @@ interface RelayService {
 
     @Send
     fun subscribeRequest(subscribeRequest: Relay.Subscribe.Request)
-
-    @Send
-    fun sendText(message: String)
 
     @Receive
     fun observeSubscribeAcknowledgement(): Flow<Relay.Subscribe.Acknowledgement>
