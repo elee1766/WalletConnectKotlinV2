@@ -11,7 +11,7 @@ fun main() {
     val scope = CoroutineScope(job + Dispatchers.IO)
     val engine = EngineInteractor(true, "relay.walletconnect.org?apiKey=c4f79cc821944d9680842e34466bfbd")
     val uri =
-        "wc:035fe1a85e3dac41539b8ef2b2916c9da0b8abf78cb318890071b1e2ae0b0e75@2?controller=false&publicKey=b618235db1adf42990bf3917ae6326fb5ab255f335e670610a78456f00fa225e&relay=%7B%22protocol%22%3A%22waku%22%7D"
+        "wc:e82f893677e693daa76df0d0c930d49dd69aa437f41139fff678454b1b68b463@2?controller=false&publicKey=5963e66816dcd91e5c6febc3e53f8ef3d3ead272c12359905738950c4c7e8e23&relay=%7B%22protocol%22%3A%22waku%22%7D"
 
     scope.launch {
         engine.pair(uri)

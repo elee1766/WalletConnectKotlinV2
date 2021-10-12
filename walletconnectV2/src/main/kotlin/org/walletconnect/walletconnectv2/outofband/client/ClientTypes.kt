@@ -6,7 +6,7 @@ sealed class ClientTypes {
         val hostName: String,
         val apiKey: String,
         val isController: Boolean
-    )
+    ) : ClientTypes()
 
     data class PairParams(val uri: String) : ClientTypes()
 }

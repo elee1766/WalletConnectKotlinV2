@@ -9,7 +9,7 @@ import com.tinder.scarlet.utils.getRawType
 import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
 import okhttp3.OkHttpClient
 import org.json.JSONObject
-import org.walletconnect.walletconnectv2.clientsync.PreSettlementPairing
+import org.walletconnect.walletconnectv2.clientsync.pairing.PreSettlementPairing
 import org.walletconnect.walletconnectv2.common.*
 import org.walletconnect.walletconnectv2.common.network.adapters.*
 import org.walletconnect.walletconnectv2.relay.data.RelayService

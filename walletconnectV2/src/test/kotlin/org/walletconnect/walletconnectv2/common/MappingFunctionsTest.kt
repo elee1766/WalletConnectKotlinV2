@@ -9,7 +9,7 @@ import org.json.JSONObject
 import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
-import org.walletconnect.walletconnectv2.clientsync.PreSettlementPairing
+import org.walletconnect.walletconnectv2.clientsync.pairing.PreSettlementPairing
 import org.walletconnect.walletconnectv2.common.network.adapters.ExpiryAdapter
 import org.walletconnect.walletconnectv2.common.network.adapters.JSONObjectAdapter
 import org.walletconnect.walletconnectv2.common.network.adapters.TopicAdapter
