@@ -16,6 +16,7 @@ import org.walletconnect.walletconnectv2.crypto.CryptoManager
 import org.walletconnect.walletconnectv2.crypto.KeyChain
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
 import org.walletconnect.walletconnectv2.crypto.managers.LazySodiumCryptoManager
+import org.walletconnect.walletconnectv2.outofband.client.ClientTypes
 import org.walletconnect.walletconnectv2.outofband.pairing.proposal.PairingProposedPermissions
 import org.walletconnect.walletconnectv2.relay.WakuRelayRepository
 import java.util.*

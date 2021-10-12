@@ -9,7 +9,7 @@ import kotlin.system.exitProcess
 fun main() {
     val job = SupervisorJob()
     val scope = CoroutineScope(job + Dispatchers.IO)
-    val engine = EngineInteractor(true, "staging.walletconnect.org?apiKey=c4f79cc821944d9680842e34466bfbd")
+    val engine = EngineInteractor(true, "relay.walletconnect.org?apiKey=c4f79cc821944d9680842e34466bfbd")
     val uri =
         "wc:035fe1a85e3dac41539b8ef2b2916c9da0b8abf78cb318890071b1e2ae0b0e75@2?controller=false&publicKey=b618235db1adf42990bf3917ae6326fb5ab255f335e670610a78456f00fa225e&relay=%7B%22protocol%22%3A%22waku%22%7D"
 
