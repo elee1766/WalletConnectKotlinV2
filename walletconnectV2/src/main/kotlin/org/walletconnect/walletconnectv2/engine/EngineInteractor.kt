@@ -16,7 +16,6 @@ import org.walletconnect.walletconnectv2.crypto.CryptoManager
 import org.walletconnect.walletconnectv2.crypto.KeyChain
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
 import org.walletconnect.walletconnectv2.crypto.managers.LazySodiumCryptoManager
-import org.walletconnect.walletconnectv2.outofband.client.ClientTypes
 import org.walletconnect.walletconnectv2.outofband.pairing.proposal.PairingProposedPermissions
 import org.walletconnect.walletconnectv2.relay.WakuRelayRepository
 import java.util.*
@@ -39,14 +38,12 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
     private val crypto: CryptoManager = LazySodiumCryptoManager(keyChain)
     //endregion
 
-    private var controller = true
 
     internal val pairingAcknowledgement = relayRepository.publishAcknowledgement
     internal val subscribeAcknowledgement = relayRepository.subscribeAcknowledgement
 
     fun pair(uri: String) {
         val pairingProposal = uri.toPairProposal()
-        val approved = pairingProposal.pairingProposer.controller != controller
         val selfPublicKey = crypto.generateKeyPair()
         val expiry = Expiry((Calendar.getInstance().timeInMillis / 1000) + pairingProposal.ttl.seconds)
 
@@ -57,7 +54,7 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
             selfPublicKey
         }
         val settledSequence = settle(pairingProposal.relay, selfPublicKey, peerPublicKey, pairingProposal.permissions, controllerPublicKey, expiry)
-        val preSettlementPairingApprove = pairingProposal.toApprove(1, settledSequence.settledTopic, expiry)
+        val preSettlementPairingApprove = pairingProposal.toApprove(1, settledSequence.settledTopic, expiry, selfPublicKey)
 
         relayRepository.eventsStream.start(object : Stream.Observer<WebSocket.Event> {
             override fun onComplete() {}
