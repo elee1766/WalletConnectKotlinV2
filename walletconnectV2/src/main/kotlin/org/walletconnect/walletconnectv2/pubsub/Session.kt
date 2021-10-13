@@ -5,15 +5,26 @@ import com.squareup.moshi.JsonClass
 import org.json.JSONObject
 import org.walletconnect.walletconnectv2.common.Expiry
 import org.walletconnect.walletconnectv2.common.Topic
+import org.walletconnect.walletconnectv2.common.Ttl
 import org.walletconnect.walletconnectv2.common.network.adapters.ExpiryAdapter
 import org.walletconnect.walletconnectv2.common.network.adapters.JSONObjectAdapter
 import org.walletconnect.walletconnectv2.common.network.adapters.TopicAdapter
+import org.walletconnect.walletconnectv2.pubsub.proposal.SessionProposedPermissions
+import org.walletconnect.walletconnectv2.pubsub.proposal.SessionProposer
+import org.walletconnect.walletconnectv2.pubsub.proposal.SessionSignal
 import org.walletconnect.walletconnectv2.pubsub.success.SessionParticipant
 import org.walletconnect.walletconnectv2.pubsub.success.SessionState
 
 sealed class Session {
 
-//    data class SessionProposal() : Session()
+    data class SessionProposal(
+        val topic: Topic,
+        val relay: JSONObject,
+        val proposer: SessionProposer,
+        val signal: SessionSignal?,
+        val permissions: SessionProposedPermissions,
+        val ttl: Ttl
+    ) : Session()
 
     @JsonClass(generateAdapter = true)
     data class Success(

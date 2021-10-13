@@ -6,6 +6,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.walletconnect.walletconnectv2.engine.EngineInteractor
 import org.walletconnect.walletconnectv2.outofband.client.ClientTypes
+import org.walletconnect.walletconnectv2.pubsub.Session
 
 object WalletConnectClient {
     private val job = SupervisorJob()
@@ -19,7 +20,7 @@ object WalletConnectClient {
 
     fun pair(
         pairingParams: ClientTypes.PairParams,
-        clientListeners: WalletConnectClientListeners.Session
+        clientListeners: WalletConnectClientListeners.Pairing
     ) {
         require(this::engineInteractor.isInitialized) {
             "Initialize must be called prior to pairing"
@@ -30,7 +31,7 @@ object WalletConnectClient {
         }
     }
 
-    fun approve() {
-        //todo add logic for approving session proposal
+    fun approve(proposal: Session.SessionProposal) {
+       engineInteractor.approve(proposal)
     }
 }

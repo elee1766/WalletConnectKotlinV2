@@ -1,17 +1,8 @@
 package org.walletconnect.walletconnectv2
+import org.walletconnect.walletconnectv2.pubsub.Session
 
 sealed interface WalletConnectClientListeners {
-    fun interface Session : WalletConnectClientListeners {
-        fun onSessionProposal(proposal: SessionProposal)
+    fun interface Pairing : WalletConnectClientListeners {
+        fun onSessionProposal(proposal: Session.SessionProposal)
     }
 }
-
-//TODO change to proper object once we got session proposal payload from relay server
-data class SessionProposal(
-    var icon: String = "",
-    var name: String = "",
-    var uri: String = "",
-    var description: String = "",
-    var chains: List<String> = emptyList(),
-    var methods: List<String> = emptyList()
-)

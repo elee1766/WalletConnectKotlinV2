@@ -39,7 +39,6 @@ class WalletViewModel(application: Application) : AndroidViewModel(application) 
 //         WalletConnectClient.pair(pairingParams, sessionProposalListener)
 
 
-
         //mocked session proposal
         val sessionProposal = SessionProposal(
             name = "WalletConnect",
@@ -56,9 +55,6 @@ class WalletViewModel(application: Application) : AndroidViewModel(application) 
     }
 
     fun approve() {
-//        Call approve method from SDK to approve session proposal
-//        WalletConnectClient.approve()
-
         val session = Session(
             name = "WalletConnect",
             uri = "app.walletconnect.org",
@@ -67,7 +63,8 @@ class WalletViewModel(application: Application) : AndroidViewModel(application) 
 
         activeSessions += session
 
-        //call approve() session method from SDK
+//        Call approve method from SDK to approve session proposal
+//        WalletConnectClient.approve()
         viewModelScope.launch {
             _eventFlow.emit(UpdateActiveSessions(activeSessions))
         }

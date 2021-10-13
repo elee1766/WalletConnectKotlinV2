@@ -1,4 +1,4 @@
-package org.walletconnect.walletconnectv2.crypto.managers
+package org.walletconnect.walletconnectv2.crypto.manager
 
 import com.goterl.lazysodium.utils.HexMessageEncoder
 import com.goterl.lazysodium.utils.Key
@@ -9,16 +9,18 @@ import org.junit.jupiter.api.Test
 import org.walletconnect.walletconnectv2.crypto.KeyChain
 import org.walletconnect.walletconnectv2.crypto.data.PrivateKey
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
+import org.walletconnect.walletconnectv2.crypto.managers.LazySodiumCryptoManager
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 internal class LazySodiumCryptoManagerTest {
-    private val privateKeyString = "BCA8EF78C5D69A3681E87A0630E16AC374B6ED612EDAB1BD26F02C4B2499851E"
+    private val privateKeyString =
+        "BCA8EF78C5D69A3681E87A0630E16AC374B6ED612EDAB1BD26F02C4B2499851E"
     private val publicKeyString = "DC22D30CFB89E30A356BA86EE48F66F1722C9B32CC9C0666A47748376BEC177D"
     private val privateKey = PrivateKey(privateKeyString)
     private val publicKey = PublicKey(publicKeyString)
-    private val keyChain = object: KeyChain {
+    private val keyChain = object : KeyChain {
         val mapOfKeys = mutableMapOf<String, String>()
 
         override fun setKey(key: String, value: String) {
@@ -49,7 +51,7 @@ internal class LazySodiumCryptoManagerTest {
     fun `Generate a shared key and return a Topic object`() {
         val peerKey = PublicKey("D083CDBBD08B93BD9AD10E95712DC0D4BD880401B04D587D8D3782FEA0CD31A9")
 
-        val topic = sut.generateSharedKey(publicKey, peerKey)
+        val topic = sut.generateSettledTopic(publicKey, peerKey)
 
         assert(topic.topicValue.isNotBlank())
         assert(topic.topicValue.length == 64)
@@ -58,10 +60,10 @@ internal class LazySodiumCryptoManagerTest {
     @Test
     fun `Generate a Topic with a sharedKey and a public key and no existing topic`() {
         val sharedKeyString = "D083CDBBD08B93BD9AD10E95712DC0D4BD880401B04D587D8D3782FEA0CD31A9"
-        val sharedKey = object: org.walletconnect.walletconnectv2.crypto.data.Key {
+        val sharedKey = object : org.walletconnect.walletconnectv2.crypto.data.Key {
             override val keyAsHex: String = sharedKeyString
         }
-        val topic = sut.setEncryptionKeys(sharedKeyString, publicKey, null)
+        val topic = sut.setEncryptionKeysAndReturnTopic(sharedKeyString, publicKey, null)
 
         assertEquals(sut.concatKeys(sharedKey, publicKey), keyChain.getKey(topic.topicValue))
     }
@@ -91,7 +93,10 @@ internal class LazySodiumCryptoManagerTest {
         val concatString = sut.concatKeys(publicKey, privateKey)
 
         assertEquals(publicKeyString + privateKeyString, concatString)
-        assertContentEquals(HexMessageEncoder().decode(concatString), concatString.hexStringToByteArray())
+        assertContentEquals(
+            HexMessageEncoder().decode(concatString),
+            concatString.hexStringToByteArray()
+        )
     }
 
     @Test
