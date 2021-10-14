@@ -10,12 +10,14 @@ import org.junit.jupiter.api.Assertions.assertFalse
 import org.junit.jupiter.api.Assertions.assertNotNull
 import org.junit.jupiter.api.Test
 import org.walletconnect.walletconnectv2.clientcomm.PreSettlementPairing
-import org.walletconnect.walletconnectv2.common.network.adapters.ExpiryAdapter
-import org.walletconnect.walletconnectv2.common.network.adapters.TopicAdapter
 import org.walletconnect.walletconnectv2.clientcomm.pairing.Pairing
 import org.walletconnect.walletconnectv2.clientcomm.pairing.proposal.PairingProposer
 import org.walletconnect.walletconnectv2.clientcomm.pairing.success.PairingParticipant
 import org.walletconnect.walletconnectv2.clientcomm.pairing.success.PairingState
+import org.walletconnect.walletconnectv2.common.network.adapters.ExpiryAdapter
+import org.walletconnect.walletconnectv2.common.network.adapters.JSONObjectAdapter
+import org.walletconnect.walletconnectv2.common.network.adapters.TopicAdapter
+import org.walletconnect.walletconnectv2.crypto.data.PublicKey
 import org.walletconnect.walletconnectv2.util.getRandom64ByteHexString
 import kotlin.test.assertEquals
 
@@ -23,7 +25,8 @@ internal class MappingFunctionsTest {
 
     @Test
     fun `A proper URI mapped to a PairingProposal`() {
-        val testUri = "wc:0b1a3d6c0336662dddb6278ee0aa25380569b79e7e86cfe39fb20b4b189096a0@2?controller=false&publicKey=66db1bd5fad65392d1d5a4856d0d549d2fca9194327138b41c289b961d147860&relay=%7B%22protocol%22%3A%22waku%22%7D"
+        val testUri =
+            "wc:0b1a3d6c0336662dddb6278ee0aa25380569b79e7e86cfe39fb20b4b189096a0@2?controller=false&publicKey=66db1bd5fad65392d1d5a4856d0d549d2fca9194327138b41c289b961d147860&relay=%7B%22protocol%22%3A%22waku%22%7D"
 
         val pairingProposal = testUri.toPairProposal()
 
@@ -37,13 +40,17 @@ internal class MappingFunctionsTest {
     @Test
     fun `PairingProposal mapped to PairingSuccess`() {
         val pairingProposal = mockk<Pairing.Proposal>() {
-            every { topic } returns Topic(getRandom64ByteHexString())
+            every { topic } returns Topic("0x111")
             every { relay } returns mockk()
-            every { pairingProposer } returns PairingProposer(getRandom64ByteHexString(), false)
-            every { ttl } returns mockk()
+            every { pairingProposer } returns PairingProposer("0x123", false)
+            every { ttl } returns Ttl(2L)
         }
 
-        val pairingSuccess = pairingProposal.toPairingSuccess(Topic(getRandom64ByteHexString()), Expiry(1))
+        val pairingSuccess = pairingProposal.toPairingSuccess(
+            Topic("0x111"),
+            Expiry(10L),
+            PublicKey("0x123")
+        )
 
         assertEquals(pairingProposal.topic, pairingSuccess.settledTopic)
         assertEquals(pairingProposal.relay, pairingSuccess.relay)
@@ -60,14 +67,19 @@ internal class MappingFunctionsTest {
         val pairingProposal = mockk<Pairing.Proposal>() {
             every { topic } returns Topic(getRandom64ByteHexString())
             every { relay } returns mockk()
-            every { pairingProposer } returns PairingProposer(getRandom64ByteHexString(), false)
+            every { pairingProposer } returns PairingProposer("0x123", false)
             every { ttl } returns mockk()
         }
 
-        val wcPairingApprove = pairingProposal.toApprove(randomId, settledTopic, expiry)
+        val wcPairingApprove = pairingProposal.toApprove(
+            randomId,
+            settledTopic,
+            expiry,
+            PublicKey("0x123")
+        )
 
         assertEquals(randomId, wcPairingApprove.id)
-        assertEquals(pairingProposal.toPairingSuccess(settledTopic, expiry), wcPairingApprove.params)
+        assertEquals(pairingProposal.toPairingSuccess(settledTopic, expiry, PublicKey("0x123")), wcPairingApprove.params)
     }
 
     @Test
@@ -75,6 +87,7 @@ internal class MappingFunctionsTest {
         val moshi = Moshi.Builder()
             .addLast(ExpiryAdapter as JsonAdapter<Expiry>)
             .addLast(TopicAdapter as JsonAdapter<Topic>)
+            .addLast(JSONObjectAdapter as JsonAdapter<JSONObject>)
             .addLast(KotlinJsonAdapterFactory())
             .build()
         val preSettlementPairingApprove = mockk<PreSettlementPairing.Approve>() {
@@ -84,6 +97,7 @@ internal class MappingFunctionsTest {
             every { params } returns Pairing.Success(Topic(getRandom64ByteHexString()) /*settle topic*/, JSONObject(), PairingParticipant(getRandom64ByteHexString()), Expiry(100L), PairingState(null))
         }
 
+        //TODO test failing, review
         val relayPublishRequest = preSettlementPairingApprove.toRelayPublishRequest(1, Topic(getRandom64ByteHexString()), moshi)
 
         assert(relayPublishRequest.params.message.isNotBlank())

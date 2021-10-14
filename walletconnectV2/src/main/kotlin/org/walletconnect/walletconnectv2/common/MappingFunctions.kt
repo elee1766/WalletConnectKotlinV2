@@ -9,6 +9,7 @@ import org.walletconnect.walletconnectv2.clientcomm.pairing.Pairing
 import org.walletconnect.walletconnectv2.clientcomm.pairing.proposal.PairingProposer
 import org.walletconnect.walletconnectv2.clientcomm.pairing.success.PairingParticipant
 import org.walletconnect.walletconnectv2.clientcomm.pairing.success.PairingState
+import org.walletconnect.walletconnectv2.crypto.data.PublicKey
 import org.walletconnect.walletconnectv2.relay.data.model.Relay
 import java.net.URI
 import kotlin.time.Duration
@@ -32,20 +33,29 @@ internal fun String.toPairProposal(): Pairing.Proposal {
     )
 }
 
-internal fun Pairing.Proposal.toPairingSuccess(settleTopic: Topic, expiry: Expiry): Pairing.Success {
+internal fun Pairing.Proposal.toPairingSuccess(
+    settleTopic: Topic,
+    expiry: Expiry,
+    selfPublicKey: PublicKey
+): Pairing.Success {
     return Pairing.Success(
         settledTopic = settleTopic,
         relay = relay,
-        responder = PairingParticipant(publicKey = pairingProposer.publicKey),
+        responder = PairingParticipant(publicKey = selfPublicKey.keyAsHex),
         expiry = expiry,
         state = PairingState(null)
     )
 }
 
-internal fun Pairing.Proposal.toApprove(id: Int, settleTopic: Topic, expiry: Expiry): PreSettlementPairing.Approve {
+internal fun Pairing.Proposal.toApprove(
+    id: Int,
+    settleTopic: Topic,
+    expiry: Expiry,
+    selfPublicKey: PublicKey
+): PreSettlementPairing.Approve {
     return PreSettlementPairing.Approve(
         id = id,
-        params = this.toPairingSuccess(settleTopic, expiry)
+        params = this.toPairingSuccess(settleTopic, expiry, selfPublicKey)
     )
 }
 
