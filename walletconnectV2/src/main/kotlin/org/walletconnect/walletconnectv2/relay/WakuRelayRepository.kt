@@ -3,6 +3,7 @@ package org.walletconnect.walletconnectv2.relay
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.tinder.scarlet.Scarlet
+import com.tinder.scarlet.WebSocket
 import com.tinder.scarlet.messageadapter.moshi.MoshiMessageAdapter
 import com.tinder.scarlet.retry.LinearBackoffStrategy
 import com.tinder.scarlet.utils.getRawType
@@ -15,13 +16,20 @@ import org.walletconnect.walletconnectv2.common.network.adapters.*
 import org.walletconnect.walletconnectv2.relay.data.RelayService
 import org.walletconnect.walletconnectv2.relay.data.model.Relay
 import org.walletconnect.walletconnectv2.util.adapters.FlowStreamAdapter
+import java.net.InetAddress
+import java.net.Socket
+import java.time.Duration
 import java.util.concurrent.TimeUnit
+import javax.net.SocketFactory
 
 class WakuRelayRepository internal constructor(private val useTLs: Boolean, private val hostName: String, private val port: Int) {
     //region Move to DI module
     private val okHttpClient = OkHttpClient.Builder()
-        .writeTimeout(500, TimeUnit.MILLISECONDS)
-        .readTimeout(500, TimeUnit.MILLISECONDS)
+        .writeTimeout(TIMEOUT_TIME, TimeUnit.MILLISECONDS)
+        .readTimeout(TIMEOUT_TIME, TimeUnit.MILLISECONDS)
+        .callTimeout(TIMEOUT_TIME, TimeUnit.MILLISECONDS)
+        .connectTimeout(TIMEOUT_TIME, TimeUnit.MILLISECONDS)
+        .pingInterval(2, TimeUnit.SECONDS)
         .build()
     private val moshi: Moshi = Moshi.Builder()
         .addLast { type, _, _ ->
@@ -67,12 +75,13 @@ class WakuRelayRepository internal constructor(private val useTLs: Boolean, priv
     }
 
     private fun getServerUrl(): String {
-        return (if (useTLs) "wss" else "ws") +
+        return "ws://localhost:8080"/*(if (useTLs) "wss" else "ws") +
                 "://$hostName" +
-                if (port > 0) ":$port" else ""
+                if (port > 0) ":$port" else ""*/
     }
 
     companion object {
+        private const val TIMEOUT_TIME = 5000L
         private const val DEFAULT_BACKOFF_MINUTES = 5L
 
         fun initRemote(useTLs: Boolean = false, hostName: String, port: Int = 0) =

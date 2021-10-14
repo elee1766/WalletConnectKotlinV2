@@ -3,6 +3,8 @@ package org.walletconnect.walletconnectv2.engine
 import com.tinder.scarlet.Stream
 import com.tinder.scarlet.WebSocket
 import org.json.JSONObject
+import org.reactivestreams.Subscriber
+import org.reactivestreams.Subscription
 import org.walletconnect.walletconnectv2.clientcomm.pairing.proposal.PairingProposedPermissions
 import org.walletconnect.walletconnectv2.common.Expiry
 import org.walletconnect.walletconnectv2.common.Topic
@@ -54,11 +56,16 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
         val preSettlementPairingApprove = pairingProposal.toApprove(1, settledSequence.settledTopic, expiry, selfPublicKey)
 
         relayRepository.eventsStream.start(object : Stream.Observer<WebSocket.Event> {
-            override fun onComplete() {}
+            override fun onComplete() {
+                println("completed")
+            }
 
-            override fun onError(throwable: Throwable) {}
+            override fun onError(throwable: Throwable) {
+                println("throwable: ${throwable.stackTraceToString()}")
+            }
 
             override fun onNext(data: WebSocket.Event) {
+                println("\n\n$data")
                 if (data is WebSocket.Event.OnConnectionOpened<*>) {
                     relayRepository.subscribe(settledSequence.settledTopic)
                     relayRepository.publish(pairingProposal.topic, preSettlementPairingApprove)
