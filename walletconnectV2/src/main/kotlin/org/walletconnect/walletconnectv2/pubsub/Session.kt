@@ -15,11 +15,15 @@ import org.walletconnect.walletconnectv2.pubsub.proposal.SessionSignal
 import org.walletconnect.walletconnectv2.pubsub.success.SessionParticipant
 import org.walletconnect.walletconnectv2.pubsub.success.SessionState
 
+data class RelayProtocolOptions(
+    val protocol: String = "waku"
+)
+
 sealed class Session {
 
     data class SessionProposal(
         val topic: Topic,
-        val relay: JSONObject,
+        val relay: RelayProtocolOptions,
         val proposer: SessionProposer,
         val signal: SessionSignal?,
         val permissions: SessionProposedPermissions,
@@ -28,12 +32,11 @@ sealed class Session {
 
     @JsonClass(generateAdapter = true)
     data class Success(
-        @Json(name = "topic")
-        @TopicAdapter.Qualifier
-        val settledTopic: Topic,
+//        @Json(name = "topic")
+//        @TopicAdapter.Qualifier
+//        val settledTopic: Topic,
         @Json(name = "relay")
-        @JSONObjectAdapter.Qualifier
-        val relay: JSONObject,
+        val relay: RelayProtocolOptions,
         @Json(name = "responder")
         val responder: SessionParticipant,
         @Json(name = "expiry")

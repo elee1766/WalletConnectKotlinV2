@@ -64,7 +64,7 @@ class WakuRelayRepository internal constructor(
         topic: Topic,
         preSettlementPairingApproval: PreSettlementPairing.Approve
     ) {
-        val publishRequest = preSettlementPairingApproval.toRelayPublishRequest(2, topic, moshi)
+        val publishRequest = preSettlementPairingApproval.toRelayPublishRequest(Utils.generateId(), topic, moshi)
         println(
             "Publish Request ${
                 moshi.adapter(Relay.Publish.Request::class.java).toJson(publishRequest)
@@ -83,7 +83,7 @@ class WakuRelayRepository internal constructor(
 
     fun publishSessionApproval(
         topic: Topic,
-        encryptedJson: String,
+        encryptedJson: String
     ) {
         val publishRequest =
             Relay.Publish.Request(
@@ -92,7 +92,7 @@ class WakuRelayRepository internal constructor(
             )
 
         println(
-            "Publish Session Approval Request ${
+            "Kobe Publish Session Approval Request ${
                 moshi.adapter(Relay.Publish.Request::class.java).toJson(publishRequest)
             }"
         )
@@ -102,10 +102,13 @@ class WakuRelayRepository internal constructor(
 
     fun subscribe(topic: Topic) {
         val subscribeRequest =
-            Relay.Subscribe.Request(id = 3, params = Relay.Subscribe.Request.Params(topic))
+            Relay.Subscribe.Request(id = Utils.generateId(), params = Relay.Subscribe.Request.Params(topic))
+
         val subscribeRequestJson =
             moshi.adapter(Relay.Subscribe.Request::class.java).toJson(subscribeRequest)
+
         println("Subscribe Request $subscribeRequestJson")
+
         relay.subscribeRequest(subscribeRequest)
     }
 

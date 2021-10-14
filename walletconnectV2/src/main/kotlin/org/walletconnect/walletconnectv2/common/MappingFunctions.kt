@@ -103,7 +103,7 @@ private fun Session.SessionProposal.toSessionSuccess(
 ): Session.Success =
     Session.Success(
         relay = relay,
-        settledTopic = settledTopic,
+//        settledTopic = settledTopic,
         state = state,
         expiry = expiry,
         responder = SessionParticipant(selfPublicKey.keyAsHex)

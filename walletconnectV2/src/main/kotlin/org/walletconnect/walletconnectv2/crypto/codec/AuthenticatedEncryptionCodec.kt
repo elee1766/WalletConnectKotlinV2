@@ -1,5 +1,6 @@
 package org.walletconnect.walletconnectv2.crypto.codec
 
+import okio.Utf8
 import org.walletconnect.walletconnectv2.crypto.Codec
 import org.walletconnect.walletconnectv2.crypto.data.EncryptionPayload
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
@@ -13,7 +14,11 @@ import javax.crypto.spec.SecretKeySpec
 
 class AuthenticatedEncryptionCodec : Codec {
 
-    override fun encrypt(message: String, sharedKey: String): EncryptionPayload {
+    override fun encrypt(
+        message: String,
+        sharedKey: String,
+        selfPublicKey: PublicKey
+    ): EncryptionPayload {
         val (encryptionKey, authenticationKey) = getKeys(sharedKey)
 
         val data = message.toByteArray(Charsets.UTF_8)
@@ -27,22 +32,28 @@ class AuthenticatedEncryptionCodec : Codec {
         )
         val cipherText: ByteArray = cipher.doFinal(data)
 
-        val computedMac: String = computeHmac(cipherText, iv, authenticationKey)
+        val computedMac: String =
+            computeHmac(cipherText, iv, authenticationKey, selfPublicKey.keyAsHex.toByteArray())
 
         return EncryptionPayload(
             iv = iv.toHexString(),
-            publicKey = PublicKey(sharedKey),
+            publicKey = selfPublicKey.keyAsHex,
             mac = computedMac,
             cipherText = cipherText.toHexString()
         )
     }
 
-    override fun decrypt(payload: EncryptionPayload, sharedKey: String): String {
+    override fun decrypt(
+        payload: EncryptionPayload,
+        sharedKey: String,
+        publicKey: PublicKey
+    ): String {
         val (encryptionKey, authenticationKey) = getKeys(sharedKey)
 
         val data = payload.cipherText.toByteArray()
         val iv = payload.iv.toByteArray()
-        val computedHmac = computeHmac(data, iv, authenticationKey)
+        val computedHmac =
+            computeHmac(data, iv, authenticationKey, publicKey.keyAsHex.toByteArray())
 
         if (computedHmac != payload.mac.lowercase(Locale.getDefault())) {
             throw Exception("Invalid Hmac")
@@ -69,30 +80,29 @@ class AuthenticatedEncryptionCodec : Codec {
         return Pair(aesKey, hmacKey)
     }
 
-    private fun computeHmac(data: ByteArray, iv: ByteArray, key: ByteArray): String {
+    private fun computeHmac(
+        data: ByteArray,
+        iv: ByteArray,
+        key: ByteArray,
+        selfPublicKey: ByteArray
+    ): String {
         val mac = Mac.getInstance(MAC_ALGORITHM)
-        val payload = data + iv
+        val payload = iv + selfPublicKey + data
         mac.init(SecretKeySpec(key, MAC_ALGORITHM))
         return mac.doFinal(payload).toHexString()
     }
 
-    private fun ByteArray.toHexString(): String = toHexString(this, 0, this.size, false)
+    private fun ByteArray.toHexString(): String = toHexString(this, this.size)
 
     private fun toHexString(
         input: ByteArray,
-        offset: Int,
-        length: Int,
-        withPrefix: Boolean
-    ): String {
-        val stringBuilder = StringBuilder()
-        if (withPrefix) {
-            stringBuilder.append("0x")
-        }
-        for (i in offset until offset + length) {
-            stringBuilder.append(String.format("%02x", input[i] and 0xFF))
-        }
-        return stringBuilder.toString()
-    }
+        length: Int
+    ): String =
+        StringBuilder().apply {
+            for (i in 0 until 0 + length) {
+                append(String.format("%02x", input[i] and 0xFF))
+            }
+        }.toString()
 
     private infix fun Byte.and(mask: Int): Int = toInt() and mask
 
