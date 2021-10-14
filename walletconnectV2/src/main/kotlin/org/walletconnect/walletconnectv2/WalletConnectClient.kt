@@ -3,11 +3,10 @@ package org.walletconnect.walletconnectv2
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.flow.SharingStarted
-import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.launch
+import org.walletconnect.walletconnectv2.client.WalletConnectClientListeners
 import org.walletconnect.walletconnectv2.engine.EngineInteractor
-import org.walletconnect.walletconnectv2.outofband.client.ClientTypes
+import org.walletconnect.walletconnectv2.client.ClientTypes
 
 object WalletConnectClient {
     private val job = SupervisorJob()

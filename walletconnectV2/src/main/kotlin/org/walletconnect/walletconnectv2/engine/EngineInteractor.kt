@@ -2,12 +2,10 @@ package org.walletconnect.walletconnectv2.engine
 
 import com.tinder.scarlet.Stream
 import com.tinder.scarlet.WebSocket
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.coroutineScope
-import kotlinx.coroutines.flow.collect
-import kotlinx.coroutines.launch
 import kotlinx.coroutines.reactive.asFlow
 import org.json.JSONObject
+import org.reactivestreams.Subscriber
+import org.reactivestreams.Subscription
 import org.walletconnect.walletconnectv2.common.Expiry
 import org.walletconnect.walletconnectv2.common.Topic
 import org.walletconnect.walletconnectv2.common.toApprove
@@ -16,8 +14,7 @@ import org.walletconnect.walletconnectv2.crypto.CryptoManager
 import org.walletconnect.walletconnectv2.crypto.KeyChain
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
 import org.walletconnect.walletconnectv2.crypto.managers.LazySodiumCryptoManager
-import org.walletconnect.walletconnectv2.outofband.client.ClientTypes
-import org.walletconnect.walletconnectv2.outofband.pairing.proposal.PairingProposedPermissions
+import org.walletconnect.walletconnectv2.clientcomm.pairing.proposal.PairingProposedPermissions
 import org.walletconnect.walletconnectv2.relay.WakuRelayRepository
 import java.util.*
 
@@ -43,6 +40,7 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
 
     internal val pairingAcknowledgement = relayRepository.publishAcknowledgement
     internal val subscribeAcknowledgement = relayRepository.subscribeAcknowledgement
+    internal val subscriptionRequest = relayRepository.subscriptionRequest
 
     fun pair(uri: String) {
         val pairingProposal = uri.toPairProposal()
@@ -66,8 +64,8 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
 
             override fun onNext(data: WebSocket.Event) {
                 if (data is WebSocket.Event.OnConnectionOpened<*>) {
-                    relayRepository.publish(pairingProposal.topic, preSettlementPairingApprove)
                     relayRepository.subscribe(settledSequence.settledTopic)
+                    relayRepository.publish(pairingProposal.topic, preSettlementPairingApprove)
                 }
             }
         })

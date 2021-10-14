@@ -1,4 +1,4 @@
-package org.walletconnect.walletconnectv2
+package org.walletconnect.walletconnectv2.client
 
 sealed interface WalletConnectClientListeners {
     fun interface Session : WalletConnectClientListeners {

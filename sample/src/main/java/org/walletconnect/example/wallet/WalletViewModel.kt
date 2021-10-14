@@ -1,16 +1,11 @@
 package org.walletconnect.example.wallet
 
 import android.app.Application
-import androidx.camera.lifecycle.ProcessCameraProvider
-import androidx.core.content.ContextCompat
 import androidx.lifecycle.*
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import org.walletconnect.example.R
 import org.walletconnect.example.wallet.ui.*
-import org.walletconnect.walletconnectv2.WalletConnectClient
-import org.walletconnect.walletconnectv2.WalletConnectClientListeners
-import org.walletconnect.walletconnectv2.outofband.client.ClientTypes
 
 class WalletViewModel(application: Application) : AndroidViewModel(application) {
 

@@ -9,7 +9,7 @@ import com.tinder.scarlet.utils.getRawType
 import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
 import okhttp3.OkHttpClient
 import org.json.JSONObject
-import org.walletconnect.walletconnectv2.clientsync.PreSettlementPairing
+import org.walletconnect.walletconnectv2.clientcomm.PreSettlementPairing
 import org.walletconnect.walletconnectv2.common.*
 import org.walletconnect.walletconnectv2.common.network.adapters.*
 import org.walletconnect.walletconnectv2.relay.data.RelayService
@@ -50,7 +50,7 @@ class WakuRelayRepository internal constructor(private val useTLs: Boolean, priv
     internal val eventsStream = relay.observeEvents()
     internal val publishAcknowledgement = relay.observePublishAcknowledgement()
     internal val subscribeAcknowledgement = relay.observeSubscribeAcknowledgement()
-    val subscriptionRequest = relay.observeSubscriptionRequest()
+    internal val subscriptionRequest = relay.observeSubscriptionRequest()
     val unsubscribeAcknowledgement = relay.observeUnsubscribeAcknowledgement()
 
     fun publish(topic: Topic, preSettlementPairingApproval: PreSettlementPairing.Approve) {

@@ -11,7 +11,7 @@ fun main() {
     val scope = CoroutineScope(job + Dispatchers.IO)
     val engine = EngineInteractor(true, "relay.walletconnect.org?apiKey=c4f79cc821944d9680842e34466bfbd")
     val uri =
-        "wc:035fe1a85e3dac41539b8ef2b2916c9da0b8abf78cb318890071b1e2ae0b0e75@2?controller=false&publicKey=b618235db1adf42990bf3917ae6326fb5ab255f335e670610a78456f00fa225e&relay=%7B%22protocol%22%3A%22waku%22%7D"
+        "wc:d84ee4708ffe65846827808a3559a36e0f5d0114a0c476a6d33350e1572c6193@2?controller=false&publicKey=d3d1d46e3a3c39b8b488841c6c98efc742115b093e52676a8749af038b935717&relay=%7B%22protocol%22%3A%22waku%22%7D"
 
     scope.launch {
         engine.pair(uri)
@@ -27,18 +27,22 @@ fun main() {
                     }
                 }
 
-                val subDeferred = async(Dispatchers.IO) {
+                val subscribeDeferred = async(Dispatchers.IO) {
                     engine.subscribeAcknowledgement.collect {
                         println("Subscribe Acknowledgement $it")
                         require(it.result.id.isNotBlank()) {
                             "Acknowledgement from Relay returned false"
                         }
-
-//                        exitProcess(0)
                     }
                 }
 
-                listOf(pairDeferred, subDeferred).awaitAll()
+                val subscriptionDeferred = async(Dispatchers.IO) {
+                    engine.subscriptionRequest.collect {
+                        println("Subscription Request $it")
+                    }
+                }
+
+                listOf(pairDeferred, subscribeDeferred, subscriptionDeferred).awaitAll()
             }
         } catch (timeoutException: TimeoutCancellationException) {
             println("timed out")

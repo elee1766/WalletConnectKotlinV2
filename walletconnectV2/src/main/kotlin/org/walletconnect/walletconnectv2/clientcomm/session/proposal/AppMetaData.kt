@@ -1,4 +1,4 @@
-package org.walletconnect.walletconnectv2.outofband.pairing.success
+package org.walletconnect.walletconnectv2.clientcomm.session.proposal
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
