@@ -55,6 +55,8 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
         val settledSequence = settle(pairingProposal.relay, selfPublicKey, peerPublicKey, pairingProposal.permissions, controllerPublicKey, expiry)
         val preSettlementPairingApprove = pairingProposal.toApprove(1, settledSequence.settledTopic, expiry, selfPublicKey)
 
+        println("wc_pairingApprove: ${preSettlementPairingApprove}")
+
         relayRepository.eventsStream.start(object : Stream.Observer<WebSocket.Event> {
             override fun onComplete() {
                 println("completed")

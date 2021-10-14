@@ -75,9 +75,9 @@ class WakuRelayRepository internal constructor(private val useTLs: Boolean, priv
     }
 
     private fun getServerUrl(): String {
-        return "ws://localhost:8080"/*(if (useTLs) "wss" else "ws") +
+        return (if (useTLs) "wss" else "ws") +
                 "://$hostName" +
-                if (port > 0) ":$port" else ""*/
+                if (port > 0) ":$port" else ""
     }
 
     companion object {
