@@ -14,7 +14,6 @@ import org.walletconnect.walletconnectv2.crypto.data.PublicKey
 import java.nio.charset.StandardCharsets
 import org.walletconnect.walletconnectv2.crypto.data.Key as WCKey
 
-
 class LazySodiumCryptoManager(private val keyChain: KeyChain) : CryptoManager {
     private val lazySodium =
         LazySodiumJava(SodiumJava(LibraryLoader.Mode.PREFER_BUNDLED), StandardCharsets.UTF_8)
@@ -42,10 +41,32 @@ class LazySodiumCryptoManager(private val keyChain: KeyChain) : CryptoManager {
     ): Topic {
         val (publicKey, privateKey) = getKeyPair(selfPublic)
 
-        val keyPair = KeyPair(peerPublic.toKey(), privateKey.toKey()) //change order ?
+        val keyPair = KeyPair(privateKey.toKey(), peerPublic.toKey())
         val sharedKey = lazySodium.cryptoBoxBeforeNm(keyPair)
 
-        return setEncryptionKeys(sharedKey, publicKey, overrideTopic)
+        val sharedKey2 = lazySodium.cryptoKxClientSessionKeys(
+            Key.fromHexString(publicKey.keyAsHex),
+            Key.fromHexString(privateKey.keyAsHex),
+            Key.fromHexString(peerPublic.keyAsHex)
+        )
+
+
+        val sharedKey3 = lazySodium.cryptoScalarMult(Key.fromHexString(privateKey.keyAsHex), Key.fromHexString(peerPublic.keyAsHex))
+
+
+        println("Shared1: $sharedKey\n Shared2: ${sharedKey2.rxString}\n Shared3: ${sharedKey3.asHexString}\n")
+
+        println(
+            "TopicB_1: ${lazySodium.cryptoHashSha256(sharedKey)}\n TopicB_2: ${
+                lazySodium.cryptoHashSha256(
+                    sharedKey2.rxString
+                )
+            }; ${lazySodium.cryptoHashSha256(sharedKey2.txString)}\n TopicB_3: ${
+                lazySodium.cryptoHashSha256(sharedKey3.asHexString)
+            }\n"
+        )
+
+        return setEncryptionKeys(sharedKey3.asHexString, publicKey, overrideTopic)
     }
 
     internal fun setEncryptionKeys(
@@ -60,6 +81,8 @@ class LazySodiumCryptoManager(private val keyChain: KeyChain) : CryptoManager {
         }
         val keys = concatKeys(sharedKeyObject, selfPublicKey)
         keyChain.setKey(topic.topicValue, keys)
+
+        println("Topic B: ${topic.topicValue}")
 
         return topic
     }

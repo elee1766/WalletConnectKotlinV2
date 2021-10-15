@@ -25,20 +25,21 @@ class WalletConnectCryptoManager(private val keyChain: KeyChain) : CryptoManager
     lateinit var localPrivateKey: java.security.PrivateKey
 
     override fun generateKeyPair(): PublicKey {
-//        val keyPairGenerator: KeyPairGenerator = KeyPairGenerator.getInstance("XDH")//X25519.name) //getInstance("XDH"), .getInstance("DH")
-//        keyPairGenerator.initialize(ECGenParameterSpec(X25519.name))//NamedParameterSpec("EC"))//NamedParameterSpec(X25519.name))
-
         val keyPairGenerator: KeyPairGenerator = KeyPairGenerator.getInstance("XDH")
         keyPairGenerator.initialize(NamedParameterSpec("X25519"))
 
         val keyPair = keyPairGenerator.generateKeyPair()
+        val hexEncoder = HexMessageEncoder()
 
-        localPublicKey = PublicKey(keyPair.public.encoded.bytesToHex())
-        localPrivateKey = keyPair.private//PrivateKey(keyPair.private.encoded.bytesToHex())
 
-        println("PrivateKey1: ${keyPair.private.encoded}; ${keyPair.private.encoded.bytesToHex()} PublicKey1: ${keyPair.public.encoded}; ${keyPair.public.encoded.bytesToHex()}")
+        localPublicKey = PublicKey(hexEncoder.encode(keyPair.public.encoded))
+        localPrivateKey = keyPair.private
+
+        println("PrivateKey1: ${keyPair.private.encoded}; ${keyPair.private.encoded.bytesToHex()} PublicKey1: ${keyPair.public.encoded}; ${hexEncoder.encode(keyPair.public.encoded)}\n")
 
 //        setKeyPair(publicKey, privateKey)
+
+        println("PublicKey: $localPublicKey\n")
 
         return localPublicKey
     }
@@ -50,49 +51,43 @@ class WalletConnectCryptoManager(private val keyChain: KeyChain) : CryptoManager
     ): Topic {
 
 //        val (publicKey, privateKey) = getKeyPair(selfPublic)
-        println("PrivateKey2: $localPrivateKey; PublicKey2: $localPublicKey")
+        println("PrivateKey2: $localPrivateKey; PublicKey2: $localPublicKey\n")
+        val hexEncoder = HexMessageEncoder()
 
-//        println("PrivateKey Self Bytes: ${privateKey.keyAsHex.toBytes()}")
+        val keyFactory: KeyFactory = KeyFactory.getInstance("XDH")
 
-        val keyFactory: KeyFactory = KeyFactory.getInstance("XDH")//X25519.name)
-
-        val peerPublicSpec = XECPublicKeySpec(NamedParameterSpec("X25519"), BigInteger(peerPublic.keyAsHex.toBytes()))//X509EncodedKeySpec(peerPublic.keyAsHex.toByteArray())
-//        val selfPrivateSpec =  XECPrivateKeySpec(NamedParameterSpec("X25519"), localPrivateKey.encoded)//localPrivateKey.keyAsHex.toBytes())//X509EncodedKeySpec(privateKey.keyAsHex.toByteArray())
+        val peerPublicSpec = XECPublicKeySpec(
+            NamedParameterSpec("X25519"),
+            BigInteger(hexEncoder.decode(peerPublic.keyAsHex))
+        )
 
         val peerPublicKey = keyFactory.generatePublic(peerPublicSpec)
-//        val selfPrivateKey = keyFactory.generatePrivate(selfPrivateSpec)
 
-        val keyAgreement: KeyAgreement = KeyAgreement.getInstance("XDH")//getInstance(X25519.name)//KeyAgreement.getInstance("ECDH")
+        val keyAgreement: KeyAgreement = KeyAgreement.getInstance("XDH")
         keyAgreement.init(localPrivateKey)
         keyAgreement.doPhase(peerPublicKey, true)
 
         val secret: ByteArray = keyAgreement.generateSecret()
-        val secretString: String = secret.bytesToHex()
 
-        println("1 Secret Bytes: $secret; Secret String: $secretString")
-
-        return setEncryptionKeys(secretString, localPublicKey, overrideTopic)
+        return setEncryptionKeys(secret, localPublicKey, overrideTopic)
     }
 
     private fun setEncryptionKeys(
-        sharedKey: String,
+        sharedKey: ByteArray,
         selfPublicKey: PublicKey,
         overrideTopic: String?
     ): Topic {
 
-        val sharedBytes = sharedKey.toBytes()
-
-        println("2 Secret Bytes: $sharedBytes; Secret String: $sharedKey")
-
+        val hexEncoder = HexMessageEncoder()
         val messageDigest: MessageDigest = MessageDigest.getInstance("SHA-256")
-        val hashedBytes: ByteArray = messageDigest.digest(sharedBytes)
+        val hashedBytes: ByteArray = messageDigest.digest(sharedKey)
 
-        val topic = Topic(overrideTopic ?: hashedBytes.bytesToHex())
+        val topic = Topic(overrideTopic ?: hexEncoder.encode(hashedBytes))
 
         println("Topic B: ${topic.topicValue}")
 
         val sharedKeyObject = object : Key {
-            override val keyAsHex: String = sharedKey
+            override val keyAsHex: String = hexEncoder.encode(sharedKey)
         }
         val keys = concatKeys(sharedKeyObject, selfPublicKey)
         keyChain.setKey(topic.topicValue, keys)
