@@ -1,7 +1,5 @@
 package org.walletconnect.walletconnectv2.util
 
-import okhttp3.internal.and
-import org.walletconnect.walletconnectv2.util.Utils.and
 import java.lang.System.currentTimeMillis
 
 object Utils {

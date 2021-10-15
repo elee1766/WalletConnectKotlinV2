@@ -14,6 +14,7 @@ import org.walletconnect.walletconnectv2.crypto.CryptoManager
 import org.walletconnect.walletconnectv2.crypto.KeyChain
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
 import org.walletconnect.walletconnectv2.crypto.managers.LazySodiumCryptoManager
+import org.walletconnect.walletconnectv2.crypto.managers.WalletConnectCryptoManager
 import org.walletconnect.walletconnectv2.relay.WakuRelayRepository
 import java.util.*
 
@@ -33,6 +34,7 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
         }
     }
     private val crypto: CryptoManager = LazySodiumCryptoManager(keyChain)
+    private val walletConnectCryptoManager: CryptoManager = WalletConnectCryptoManager(keyChain)
     //endregion
 
     private var controller = true
