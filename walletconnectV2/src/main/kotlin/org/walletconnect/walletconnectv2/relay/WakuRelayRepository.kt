@@ -3,7 +3,6 @@ package org.walletconnect.walletconnectv2.relay
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.tinder.scarlet.Scarlet
-import com.tinder.scarlet.WebSocket
 import com.tinder.scarlet.messageadapter.moshi.MoshiMessageAdapter
 import com.tinder.scarlet.retry.LinearBackoffStrategy
 import com.tinder.scarlet.utils.getRawType
@@ -16,11 +15,7 @@ import org.walletconnect.walletconnectv2.common.network.adapters.*
 import org.walletconnect.walletconnectv2.relay.data.RelayService
 import org.walletconnect.walletconnectv2.relay.data.model.Relay
 import org.walletconnect.walletconnectv2.util.adapters.FlowStreamAdapter
-import java.net.InetAddress
-import java.net.Socket
-import java.time.Duration
 import java.util.concurrent.TimeUnit
-import javax.net.SocketFactory
 
 class WakuRelayRepository internal constructor(private val useTLs: Boolean, private val hostName: String, private val port: Int) {
     //region Move to DI module
@@ -75,9 +70,8 @@ class WakuRelayRepository internal constructor(private val useTLs: Boolean, priv
     }
 
     private fun getServerUrl(): String {
-        return "ws://localhost:8080"/*(if (useTLs) "wss" else "ws") +
-                "://$hostName" +
-                if (port > 0) ":$port" else ""*/
+//        return (if (useTLs) "wss" else "ws") + "://$hostName" + if (port > 0) ":$port" else ""
+        return "ws://localhost:8080"
     }
 
     companion object {

@@ -104,7 +104,7 @@ sealed class Relay {
                 @field:SubscriptionIdAdapter.Qualifier
                 val subscriptionId: SubscriptionId,
                 @Json(name = "data")
-                val data: SubscriptionData
+                val subscriptionData: SubscriptionData
             ) {
 
                 @JsonClass(generateAdapter = true)

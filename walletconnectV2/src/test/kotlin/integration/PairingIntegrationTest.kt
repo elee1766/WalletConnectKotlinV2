@@ -11,7 +11,7 @@ fun main() {
     val scope = CoroutineScope(job + Dispatchers.IO)
     val engine = EngineInteractor(true, "relay.walletconnect.org?apiKey=c4f79cc821944d9680842e34466bfbd")
     val uri =
-        "wc:ffdab82f201d6c02be6c8b79184878154811351b6af0544cc7f57d61b1a85868@2?controller=false&publicKey=d1a7dfa074f8516a88d3e4f2280a4b150066c0ee37ff10689b16827e00f90304&relay=%7B%22protocol%22%3A%22waku%22%7D"
+        "wc:e2852a8fe3b696c56b423d85b14678a4e5ca403c858a39563f420874cafcdbd8@2?controller=false&publicKey=37dc11384a403ce9272580bde885ab7543187f421555d088cc92e1556fd2dc4d&relay=%7B%22protocol%22%3A%22waku%22%7D"
 
     scope.launch {
         engine.pair(uri)
@@ -27,22 +27,22 @@ fun main() {
                     }
                 }
 
-//                val subscribeDeferred = async(Dispatchers.IO) {
-//                    engine.subscribeAcknowledgement.collect {
-//                        println("Subscribe Acknowledgement $it")
-//                        require(it.result.id.isNotBlank()) {
-//                            "Acknowledgement from Relay returned false"
-//                        }
-//                    }
-//                }
-//
-//                val subscriptionDeferred = async(Dispatchers.IO) {
-//                    engine.subscriptionRequest.collect {
-//                        println("Subscription Request $it")
-//                    }
-//                }
+                val subscribeDeferred = async(Dispatchers.IO) {
+                    engine.subscribeAcknowledgement.collect {
+                        println("Subscribe Acknowledgement $it")
+                        require(it.result.id.isNotBlank()) {
+                            "Acknowledgement from Relay returned false"
+                        }
+                    }
+                }
 
-                listOf(pairDeferred, /*subscribeDeferred, subscriptionDeferred*/).awaitAll()
+                val subscriptionDeferred = async(Dispatchers.IO) {
+                    engine.subscriptionRequest.collect {
+                        println("Subscription Request $it")
+                    }
+                }
+
+                listOf(pairDeferred, subscribeDeferred, subscriptionDeferred).awaitAll()
             }
         } catch (timeoutException: TimeoutCancellationException) {
             println("timed out")

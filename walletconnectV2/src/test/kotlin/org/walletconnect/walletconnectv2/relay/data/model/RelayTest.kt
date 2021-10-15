@@ -1,5 +1,6 @@
 package org.walletconnect.walletconnectv2.relay.data.model
 
+import com.squareup.moshi.JsonReader
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.tinder.scarlet.Message
@@ -20,6 +21,9 @@ import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.singleOrNull
 import okhttp3.OkHttpClient
 import okhttp3.mockwebserver.MockWebServer
+import okio.Buffer
+import org.assertj.core.api.Assertions.assertThat
+import org.intellij.lang.annotations.Language
 import org.json.JSONObject
 import org.junit.Rule
 import org.junit.jupiter.api.BeforeEach
@@ -135,10 +139,9 @@ internal class RelayTest {
                 any<WebSocket.Event.OnConnectionOpened<*>>(),
                 any<WebSocket.Event.OnMessageReceived>().containingRelayObject(relaySubscribeRequest)
             )
-            // TODO: Look into why this is failing all of a sudden
-//            serverRelayPublishObserver.awaitValues(
-//                any<Relay.Subscribe.Request> { assertThat(this).isEqualTo(relaySubscribeRequest) }
-//            )
+            serverRelayPublishObserver.awaitValues(
+                any<Relay.Subscribe.Request> { assertThat(this).isEqualTo(relaySubscribeRequest) }
+            )
         }
 
         @Test
@@ -177,7 +180,7 @@ internal class RelayTest {
                 id = 1,
                 params = Relay.Subscription.Request.Params(
                     subscriptionId = SubscriptionId("subscriptionId"),
-                    data = Relay.Subscription.Request.Params.SubscriptionData(
+                    subscriptionData = Relay.Subscription.Request.Params.SubscriptionData(
                         topic = Topic(getRandom64ByteHexString()),
                         message = "This is a test"
                     )
@@ -245,10 +248,9 @@ internal class RelayTest {
                 any<WebSocket.Event.OnConnectionOpened<*>>(),
                 any<WebSocket.Event.OnMessageReceived>().containingRelayObject(relayUnsubscribeRequest)
             )
-            // TODO: Look into why this is failing all of a sudden
-//            serverRelayPublishObserver.awaitValues(
-//                any<Relay.Unsubscribe.Request> { assertThat(this).isEqualTo(relayUnsubscribeRequest) }
-//            )
+            serverRelayPublishObserver.awaitValues(
+                any<Relay.Unsubscribe.Request> { assertThat(this).isEqualTo(relayUnsubscribeRequest) }
+            )
         }
 
         @Test
@@ -277,7 +279,7 @@ internal class RelayTest {
     }
 
     private fun createMoshi(): Moshi = Moshi.Builder()
-        .addLast { type, _, _ ->
+        .add { type, _, _ ->
             when (type.getRawType().name) {
                 Expiry::class.qualifiedName -> ExpiryAdapter
                 JSONObject::class.qualifiedName -> JSONObjectAdapter

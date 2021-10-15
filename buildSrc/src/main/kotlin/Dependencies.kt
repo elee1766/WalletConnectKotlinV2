@@ -49,6 +49,8 @@ fun DependencyHandlerScope.scarlet() {
 fun DependencyHandlerScope.moshi() {
     val moshiVersion = "1.12.0"
     "implementation"("com.squareup.moshi:moshi-adapters:$moshiVersion")
+    "implementation"("com.squareup.moshi:moshi-kotlin:$moshiVersion")
+    "kapt"("com.squareup.moshi:moshi-kotlin-codegen:$moshiVersion")
 }
 
 fun DependencyHandlerScope.json() {
