@@ -7,8 +7,9 @@ import org.walletconnect.walletconnectv2.crypto.KeyChain
 import org.walletconnect.walletconnectv2.crypto.data.Key
 import org.walletconnect.walletconnectv2.crypto.data.PrivateKey
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
+import org.walletconnect.walletconnectv2.util.Utils.bytesToHex
 import org.walletconnect.walletconnectv2.util.Utils.toBytes
-import org.walletconnect.walletconnectv2.util.Utils.toHexString
+import java.math.BigInteger
 import java.security.KeyFactory
 import java.security.KeyPair
 import java.security.KeyPairGenerator
@@ -20,20 +21,26 @@ import javax.crypto.KeyAgreement
 
 class WalletConnectCryptoManager(private val keyChain: KeyChain) : CryptoManager {
 
+    var localPublicKey: PublicKey = PublicKey("")
+    lateinit var localPrivateKey: java.security.PrivateKey
+
     override fun generateKeyPair(): PublicKey {
-        val keyPairGenerator: KeyPairGenerator = KeyPairGenerator.getInstance(X25519.name) //getInstance("XDH"), .getInstance("DH")
-        keyPairGenerator.initialize(NamedParameterSpec(X25519.name))
+//        val keyPairGenerator: KeyPairGenerator = KeyPairGenerator.getInstance("XDH")//X25519.name) //getInstance("XDH"), .getInstance("DH")
+//        keyPairGenerator.initialize(ECGenParameterSpec(X25519.name))//NamedParameterSpec("EC"))//NamedParameterSpec(X25519.name))
+
+        val keyPairGenerator: KeyPairGenerator = KeyPairGenerator.getInstance("XDH")
+        keyPairGenerator.initialize(NamedParameterSpec("X25519"))
 
         val keyPair = keyPairGenerator.generateKeyPair()
 
-        val publicKey = PublicKey(keyPair.public.encoded.toHexString())
-        val privateKey = PrivateKey(keyPair.private.encoded.toHexString())
+        localPublicKey = PublicKey(keyPair.public.encoded.bytesToHex())
+        localPrivateKey = keyPair.private//PrivateKey(keyPair.private.encoded.bytesToHex())
 
-        println("PrivateKey1: ${keyPair.private.encoded}; ${keyPair.private.encoded.toHexString()} PublicKey1: ${keyPair.public.encoded}; ${keyPair.public.encoded.toHexString()}")
+        println("PrivateKey1: ${keyPair.private.encoded}; ${keyPair.private.encoded.bytesToHex()} PublicKey1: ${keyPair.public.encoded}; ${keyPair.public.encoded.bytesToHex()}")
 
-        setKeyPair(publicKey, privateKey)
+//        setKeyPair(publicKey, privateKey)
 
-        return publicKey
+        return localPublicKey
     }
 
     override fun generateSharedKey(
@@ -42,28 +49,29 @@ class WalletConnectCryptoManager(private val keyChain: KeyChain) : CryptoManager
         overrideTopic: String?
     ): Topic {
 
-        val (publicKey, privateKey) = getKeyPair(selfPublic)
-        println("PrivateKey2: $privateKey; PublicKey2: $publicKey")
+//        val (publicKey, privateKey) = getKeyPair(selfPublic)
+        println("PrivateKey2: $localPrivateKey; PublicKey2: $localPublicKey")
 
-        val keyFactory: KeyFactory = KeyFactory.getInstance(X25519.name)
-        val peerPublicSpec = X509EncodedKeySpec(peerPublic.keyAsHex.toByteArray())
-        val selfPrivateSpec = X509EncodedKeySpec(privateKey.keyAsHex.toByteArray())
+//        println("PrivateKey Self Bytes: ${privateKey.keyAsHex.toBytes()}")
+
+        val keyFactory: KeyFactory = KeyFactory.getInstance("XDH")//X25519.name)
+
+        val peerPublicSpec = XECPublicKeySpec(NamedParameterSpec("X25519"), BigInteger(peerPublic.keyAsHex.toBytes()))//X509EncodedKeySpec(peerPublic.keyAsHex.toByteArray())
+//        val selfPrivateSpec =  XECPrivateKeySpec(NamedParameterSpec("X25519"), localPrivateKey.encoded)//localPrivateKey.keyAsHex.toBytes())//X509EncodedKeySpec(privateKey.keyAsHex.toByteArray())
 
         val peerPublicKey = keyFactory.generatePublic(peerPublicSpec)
-        val selfPrivateKey = keyFactory.generatePublic(selfPrivateSpec)
+//        val selfPrivateKey = keyFactory.generatePrivate(selfPrivateSpec)
 
-
-
-        val keyAgreement: KeyAgreement = KeyAgreement.getInstance(X25519.name)//KeyAgreement.getInstance("ECDH")
-        keyAgreement.init(selfPrivateKey)
+        val keyAgreement: KeyAgreement = KeyAgreement.getInstance("XDH")//getInstance(X25519.name)//KeyAgreement.getInstance("ECDH")
+        keyAgreement.init(localPrivateKey)
         keyAgreement.doPhase(peerPublicKey, true)
 
         val secret: ByteArray = keyAgreement.generateSecret()
-        val secretString: String = secret.toHexString()
+        val secretString: String = secret.bytesToHex()
 
         println("1 Secret Bytes: $secret; Secret String: $secretString")
 
-        return setEncryptionKeys(secretString, publicKey, overrideTopic)
+        return setEncryptionKeys(secretString, localPublicKey, overrideTopic)
     }
 
     private fun setEncryptionKeys(
@@ -79,7 +87,7 @@ class WalletConnectCryptoManager(private val keyChain: KeyChain) : CryptoManager
         val messageDigest: MessageDigest = MessageDigest.getInstance("SHA-256")
         val hashedBytes: ByteArray = messageDigest.digest(sharedBytes)
 
-        val topic = Topic(overrideTopic ?: hashedBytes.toHexString())
+        val topic = Topic(overrideTopic ?: hashedBytes.bytesToHex())
 
         println("Topic B: ${topic.topicValue}")
 

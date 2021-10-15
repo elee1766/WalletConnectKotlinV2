@@ -6,25 +6,25 @@ object Utils {
 
     fun generateId(): Int = (currentTimeMillis() + (0..100).random()).toInt()
 
-//    fun ByteArray.bytesToHex(): String {
-//        val hexString = StringBuilder(2 * this.size)
-//        for (i in this.indices) {
-//            val hex = Integer.toHexString(0xff and this[i].toInt())
-//            if (hex.length == 1) {
-//                hexString.append('0')
-//            }
-//            hexString.append(hex)
-//        }
-//        return hexString.toString()
-//    }
-
-    fun ByteArray.toHexString(): String {
-        val stringBuilder = StringBuilder()
-        for (i in 0 until 0 + this.size) {
-            stringBuilder.append(String.format("%02x", this[i] and 0xFF))
+    fun ByteArray.bytesToHex(): String {
+        val hexString = StringBuilder(2 * this.size)
+        for (i in this.indices) {
+            val hex = Integer.toHexString(0xff and this[i].toInt())
+            if (hex.length == 1) {
+                hexString.append('0')
+            }
+            hexString.append(hex)
         }
-        return stringBuilder.toString()
+        return hexString.toString()
     }
+
+//    fun ByteArray.toHexString(): String {
+//        val stringBuilder = StringBuilder()
+//        for (i in 0 until 0 + this.size) {
+//            stringBuilder.append(String.format("%02x", this[i] and 0xFF))
+//        }
+//        return stringBuilder.toString()
+//    }
 
     private infix fun Byte.and(mask: Int): Int = toInt() and mask
 

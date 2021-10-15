@@ -31,7 +31,7 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
             return mapOfKeys[key]!!
         }
     }
-    private val crypto: CryptoManager = LazySodiumCryptoManager(keyChain)
+//    private val crypto: CryptoManager = LazySodiumCryptoManager(keyChain)
     private val walletConnectCryptoManager: CryptoManager = WalletConnectCryptoManager(keyChain)
     //endregion
 
@@ -43,7 +43,7 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
 
     fun pair(uri: String) {
         val pairingProposal = uri.toPairProposal()
-        val selfPublicKey = crypto.generateKeyPair()
+        val selfPublicKey = walletConnectCryptoManager.generateKeyPair()
         val expiry = Expiry((Calendar.getInstance().timeInMillis / 1000) + pairingProposal.ttl.seconds)
 
         val peerPublicKey = PublicKey(pairingProposal.pairingProposer.publicKey)
@@ -84,7 +84,7 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
         controllerPublicKey: PublicKey,
         expiry: Expiry
     ): SettledSequence {
-        val settledTopic = crypto.generateSharedKey(selfPublicKey, peerPublicKey)
+        val settledTopic = walletConnectCryptoManager.generateSharedKey(selfPublicKey, peerPublicKey)
 
         return SettledSequence(settledTopic, relay, selfPublicKey, peerPublicKey, permissions to controllerPublicKey, expiry)
     }
