@@ -36,13 +36,13 @@ class LazySodiumCryptoManager(private val keyChain: KeyChain) : CryptoManager {
     }
 
     override fun generateSharedKey(
-        self: PublicKey,
-        peer: PublicKey,
+        selfPublic: PublicKey,
+        peerPublic: PublicKey,
         overrideTopic: String?
     ): Topic {
-        val (publicKey, privateKey) = getKeyPair(self)
+        val (publicKey, privateKey) = getKeyPair(selfPublic)
 
-        val keyPair = KeyPair(peer.toKey(), privateKey.toKey()) //change order ?
+        val keyPair = KeyPair(peerPublic.toKey(), privateKey.toKey()) //change order ?
         val sharedKey = lazySodium.cryptoBoxBeforeNm(keyPair)
 
         return setEncryptionKeys(sharedKey, publicKey, overrideTopic)
