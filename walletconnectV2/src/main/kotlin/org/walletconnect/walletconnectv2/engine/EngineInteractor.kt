@@ -11,8 +11,7 @@ import org.walletconnect.walletconnectv2.common.toPairProposal
 import org.walletconnect.walletconnectv2.crypto.CryptoManager
 import org.walletconnect.walletconnectv2.crypto.KeyChain
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
-import org.walletconnect.walletconnectv2.crypto.managers.LazySodiumCryptoManager
-import org.walletconnect.walletconnectv2.crypto.managers.WalletConnectCryptoManager
+import org.walletconnect.walletconnectv2.crypto.managers.Curve25519CryptoManager
 import org.walletconnect.walletconnectv2.relay.WakuRelayRepository
 import java.util.*
 
@@ -33,7 +32,7 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
     }
 
 //    private val crypto: CryptoManager = LazySodiumCryptoManager(keyChain)
-    private val walletConnectCryptoManager: CryptoManager = WalletConnectCryptoManager(keyChain)
+    private val crypto: CryptoManager = Curve25519CryptoManager(keyChain)
     //endregion
 
     private var controller = true
@@ -44,7 +43,7 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
 
     fun pair(uri: String) {
         val pairingProposal = uri.toPairProposal()
-        val selfPublicKey = walletConnectCryptoManager.generateKeyPair()//crypto.generateKeyPair()
+        val selfPublicKey = crypto.generateKeyPair()//crypto.generateKeyPair()
         val expiry = Expiry((Calendar.getInstance().timeInMillis / 1000) + pairingProposal.ttl.seconds)
 
         val peerPublicKey = PublicKey(pairingProposal.pairingProposer.publicKey)
@@ -70,6 +69,7 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
             override fun onNext(data: WebSocket.Event) {
                 println("\n\n$data")
                 if (data is WebSocket.Event.OnConnectionOpened<*>) {
+                    println("Subscribe on TOPIC: ${settledSequence.settledTopic}")
                     relayRepository.subscribe(settledSequence.settledTopic)
                     relayRepository.publish(pairingProposal.topic, preSettlementPairingApprove)
                 }
@@ -85,7 +85,7 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
         controllerPublicKey: PublicKey,
         expiry: Expiry
     ): SettledSequence {
-        val settledTopic = walletConnectCryptoManager.generateSharedKey(selfPublicKey, peerPublicKey)//crypto.generateSharedKey(selfPublicKey, peerPublicKey)
+        val settledTopic = crypto.generateSharedKey(selfPublicKey, peerPublicKey)//crypto.generateSharedKey(selfPublicKey, peerPublicKey)
 
         return SettledSequence(settledTopic, relay, selfPublicKey, peerPublicKey, permissions to controllerPublicKey, expiry)
     }

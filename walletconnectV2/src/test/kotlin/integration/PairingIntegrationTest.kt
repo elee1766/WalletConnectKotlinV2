@@ -9,9 +9,9 @@ import kotlin.system.exitProcess
 fun main() {
     val job = SupervisorJob()
     val scope = CoroutineScope(job + Dispatchers.IO)
-    val engine = EngineInteractor(true, "relay.walletconnect.org?apiKey=c4f79cc821944d9680842e34466bfbd")
+    val engine = EngineInteractor(true, "relay.walletconnect.org")
     val uri =
-        "wc:90766b8089103744d198d36106974bb430eec932eee69502ae1db8aa96448b80@2?controller=false&publicKey=2abb267a3146adfa334aa352bdc8528407d4b99df892ebd71d534b49962cd064&relay=%7B%22protocol%22%3A%22waku%22%7D"
+        "wc:e34e484c50e52a7d89fceb35640961aec93fecaee7981e7cd884a5343a6ce6ac@2?controller=false&publicKey=4929b4e600efa3fe9b78fade9a86a2d2e50200e668dd3cb32a66605ffe071d3b&relay=%7B%22protocol%22%3A%22waku%22%7D"
     scope.launch {
         engine.pair(uri)
 
@@ -37,7 +37,7 @@ fun main() {
 
                 val subscriptionDeferred = async(Dispatchers.IO) {
                     engine.subscriptionRequest.collect {
-                        println("DUPA Subscription Request $it")
+                        println("Subscription Request $it")
                     }
                 }
 
