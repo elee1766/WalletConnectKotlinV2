@@ -48,7 +48,7 @@ internal fun Pairing.Proposal.toPairingSuccess(
 }
 
 internal fun Pairing.Proposal.toApprove(
-    id: Int,
+    id: Long,
     settleTopic: Topic,
     expiry: Expiry,
     selfPublicKey: PublicKey
@@ -59,7 +59,7 @@ internal fun Pairing.Proposal.toApprove(
     )
 }
 
-internal fun PreSettlementPairing.Approve.toRelayPublishRequest(id: Int, topic: Topic, moshi: Moshi): Relay.Publish.Request {
+internal fun PreSettlementPairing.Approve.toRelayPublishRequest(id: Long, topic: Topic, moshi: Moshi): Relay.Publish.Request {
     val pairingApproveJson = moshi.adapter(PreSettlementPairing.Approve::class.java).toJson(this)
     val hexEncodedJson = pairingApproveJson.encodeToByteArray().joinToString(separator = "") {
         String.format("%02X", it)
