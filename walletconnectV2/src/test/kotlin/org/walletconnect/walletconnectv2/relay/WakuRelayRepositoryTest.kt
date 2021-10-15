@@ -34,7 +34,7 @@ internal class WakuRelayRepositoryTest {
         val topic = Topic(getRandom64ByteHexString())
         val settledTopic = Topic(getRandom64ByteHexString())
         val preSettlementPairing = PreSettlementPairing.Approve(
-            id = 1,
+            id = 1L,
             params = Pairing.Success(
                 settledTopic = settledTopic,
                 relay = JSONObject(),

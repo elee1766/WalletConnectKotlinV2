@@ -9,17 +9,15 @@ import kotlin.system.exitProcess
 fun main() {
     val job = SupervisorJob()
     val scope = CoroutineScope(job + Dispatchers.IO)
-
-    val engine = EngineInteractor(true, "relay.walletconnect.org")
+    val engine = EngineInteractor(true, "relay.walletconnect.org?apiKey=c4f79cc821944d9680842e34466bfbd")
     val uri =
-        "wc:5f238dc528276c841dff3540ebb6867a6e906229222865a8f01f506b576c5bdd@2?controller=false&publicKey=731812baf13cb27319e0d34184dab4ab1ce2fbcafc20bcd452ab726cdeb5ef41&relay=%7B%22protocol%22%3A%22waku%22%7D"
+        "wc:e2852a8fe3b696c56b423d85b14678a4e5ca403c858a39563f420874cafcdbd8@2?controller=false&publicKey=37dc11384a403ce9272580bde885ab7543187f421555d088cc92e1556fd2dc4d&relay=%7B%22protocol%22%3A%22waku%22%7D"
 
     scope.launch {
-
         engine.pair(uri)
 
         try {
-            withTimeout(Duration.ofMinutes(2).toMillis()) {
+            withTimeout(Duration.ofMinutes(20).toMillis()) {
                 val pairDeferred = async(Dispatchers.IO) {
                     engine.pairingAcknowledgement.collect {
                         println("Publish Acknowledgement: $it")

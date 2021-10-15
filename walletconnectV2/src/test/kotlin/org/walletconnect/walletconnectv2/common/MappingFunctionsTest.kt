@@ -61,7 +61,7 @@ internal class MappingFunctionsTest {
 
     @Test
     fun `PairingSuccess mapped to PreSettlementPairing_Approve`() {
-        val randomId = 1
+        val randomId = 1L
         val settledTopic = Topic(getRandom64ByteHexString())
         val expiry = Expiry(1)
         val pairingProposal = mockk<Pairing.Proposal>() {

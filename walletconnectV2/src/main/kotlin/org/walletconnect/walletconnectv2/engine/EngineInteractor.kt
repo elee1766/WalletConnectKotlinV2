@@ -3,8 +3,6 @@ package org.walletconnect.walletconnectv2.engine
 import com.tinder.scarlet.Stream
 import com.tinder.scarlet.WebSocket
 import org.json.JSONObject
-import org.reactivestreams.Subscriber
-import org.reactivestreams.Subscription
 import org.walletconnect.walletconnectv2.clientcomm.pairing.proposal.PairingProposedPermissions
 import org.walletconnect.walletconnectv2.common.Expiry
 import org.walletconnect.walletconnectv2.common.Topic

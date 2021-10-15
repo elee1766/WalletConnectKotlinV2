@@ -12,11 +12,8 @@ object SubscriptionIdAdapter: JsonAdapter<SubscriptionId>() {
         reader.isLenient = true
         var subscriptionId: String? = null
 
-        while (reader.hasNext()) {
-            when (reader.peek()) {
-                JsonReader.Token.STRING -> subscriptionId = reader.nextString()
-                else -> reader.skipValue()
-            }
+        if (reader.hasNext() && reader.peek() == JsonReader.Token.STRING) {
+            subscriptionId = reader.nextString()
         }
 
         return if (subscriptionId != null) {
