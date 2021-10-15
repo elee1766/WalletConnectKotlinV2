@@ -65,6 +65,7 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
             override fun onNext(data: WebSocket.Event) {
                 println("\n\n$data")
                 if (data is WebSocket.Event.OnConnectionOpened<*>) {
+//                    relayRepository.subscribe(Topic("b165ce35675827889e25402549589da42cf472ca0a61dc32d69a111bafbc29f8"))
                     relayRepository.subscribe(settledSequence.settledTopic)
                     relayRepository.publish(pairingProposal.topic, preSettlementPairingApprove)
                 }
