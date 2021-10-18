@@ -1,8 +1,8 @@
-package org.walletconnect.walletconnectv2.clientSync
+package org.walletconnect.walletconnectv2.clientcomm
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
-import org.walletconnect.walletconnectv2.clientSync.pairing.Pairing
+import org.walletconnect.walletconnectv2.clientcomm.pairing.Pairing
 
 sealed class PreSettlementPairing {
     abstract val id: Long
@@ -20,12 +20,12 @@ sealed class PreSettlementPairing {
         override val method: String = "wc_pairingApprove",
         @Json(name = "params")
         override val params: Pairing.Success
-    ): PreSettlementPairing()
+    ) : PreSettlementPairing()
 
     data class Reject(
         override val id: Long,
         override val jsonrpc: String = "2.0",
         override val method: String = "wc_pairingReject",
         override val params: Pairing.Failure
-    ): PreSettlementPairing()
+    ) : PreSettlementPairing()
 }

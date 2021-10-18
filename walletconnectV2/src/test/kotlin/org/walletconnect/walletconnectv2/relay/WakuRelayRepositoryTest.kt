@@ -8,12 +8,12 @@ import kotlinx.coroutines.flow.flowOf
 import org.json.JSONObject
 import org.junit.Rule
 import org.junit.jupiter.api.Test
-import org.walletconnect.walletconnectv2.clientSync.PreSettlementPairing
+import org.walletconnect.walletconnectv2.clientcomm.PreSettlementPairing
+import org.walletconnect.walletconnectv2.clientcomm.pairing.Pairing
+import org.walletconnect.walletconnectv2.clientcomm.pairing.success.PairingParticipant
+import org.walletconnect.walletconnectv2.clientcomm.pairing.success.PairingState
 import org.walletconnect.walletconnectv2.common.Expiry
 import org.walletconnect.walletconnectv2.common.Topic
-import org.walletconnect.walletconnectv2.clientSync.pairing.Pairing
-import org.walletconnect.walletconnectv2.clientSync.pairing.success.PairingParticipant
-import org.walletconnect.walletconnectv2.clientSync.pairing.success.PairingState
 import org.walletconnect.walletconnectv2.relay.data.model.Relay
 import org.walletconnect.walletconnectv2.util.CoroutineTestRule
 import org.walletconnect.walletconnectv2.util.getRandom64ByteHexString

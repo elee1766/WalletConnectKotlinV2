@@ -1,8 +1,9 @@
-package org.walletconnect.walletconnectv2
-import org.walletconnect.walletconnectv2.pubsub.Session
+package org.walletconnect.walletconnectv2.client
+
+import org.walletconnect.walletconnectv2.clientcomm.session.Session
 
 sealed interface WalletConnectClientListeners {
     fun interface Pairing : WalletConnectClientListeners {
-        fun onSessionProposal(proposal: Session.SessionProposal)
+        fun onSessionProposal(proposal: Session.Proposal)
     }
 }

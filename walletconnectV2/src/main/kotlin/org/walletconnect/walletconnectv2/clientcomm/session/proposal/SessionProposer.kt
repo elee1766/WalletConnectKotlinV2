@@ -10,5 +10,5 @@ data class SessionProposer(
     @Json(name = "controller")
     val controller: Boolean,
     @Json(name = "metadata")
-    val metadata: AppMetaData
+    val metadata: AppMetaData?
 )

@@ -112,7 +112,7 @@ internal class LazySodiumCryptoManagerTest {
     fun `Decrypt Payload`() {
         val lazySodium = LazySodiumJava(SodiumJava(LibraryLoader.Mode.PREFER_BUNDLED), StandardCharsets.UTF_8)
 
-        lazySodium.
+//        lazySodium.
     }
 
     private fun String.hexStringToByteArray(): ByteArray {

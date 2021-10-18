@@ -1,10 +1,10 @@
 package org.walletconnect.walletconnectv2.crypto.managers
 
+
 import com.goterl.lazysodium.LazySodiumJava
 import com.goterl.lazysodium.SodiumJava
 import com.goterl.lazysodium.utils.HexMessageEncoder
 import com.goterl.lazysodium.utils.Key
-import com.goterl.lazysodium.utils.KeyPair
 import com.goterl.lazysodium.utils.LibraryLoader
 import org.walletconnect.walletconnectv2.common.Topic
 import org.walletconnect.walletconnectv2.crypto.data.Key as WCKey
@@ -42,9 +42,11 @@ class LazySodiumCryptoManager(private val keyChain: KeyChain): CryptoManager {
     }
 
     internal fun setEncryptionKeys(sharedKey: String, selfPublicKey: PublicKey, overrideTopic: String?): Topic {
+
         val messageDigest: MessageDigest = MessageDigest.getInstance("SHA-256")
         val hashedBytes: ByteArray = messageDigest.digest(sharedKey.hexToBytes())
         val topic = Topic(hashedBytes.bytesToHex())
+
         val sharedKeyObject = object: WCKey {
             override val keyAsHex: String = sharedKey
         }

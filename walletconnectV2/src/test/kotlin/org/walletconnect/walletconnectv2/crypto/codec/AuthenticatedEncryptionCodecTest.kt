@@ -1,32 +1,14 @@
 package org.walletconnect.walletconnectv2.crypto.codec
 
 import org.junit.jupiter.api.Test
-import org.walletconnect.walletconnectv2.crypto.CryptoManager
 import org.walletconnect.walletconnectv2.crypto.KeyChain
 import org.walletconnect.walletconnectv2.crypto.data.EncryptionPayload
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
-import org.walletconnect.walletconnectv2.crypto.managers.Curve25519CryptoManager
-import org.walletconnect.walletconnectv2.util.Utils.bytesToHex
-import org.walletconnect.walletconnectv2.util.Utils.hexToBytes
 import kotlin.test.assertEquals
 
 class AuthenticatedEncryptionCodecTest {
 
-    private val keyChain = object : KeyChain {
-        val mapOfKeys = mutableMapOf<String, String>()
-
-        override fun setKey(key: String, value: String) {
-            mapOfKeys[key] = value
-        }
-
-        override fun getKey(key: String): String {
-            return mapOfKeys[key]!!
-        }
-    }
-
-    private val cipher: Curve25519CryptoManager = Curve25519CryptoManager(keyChain)
     private val codec: AuthenticatedEncryptionCodec = AuthenticatedEncryptionCodec()
-
 
     @Test
     fun `Codec AES_256_CBC and Hmac_SHA256 authentication test`() {
@@ -63,7 +45,7 @@ class AuthenticatedEncryptionCodecTest {
     @Test
     fun `deserialize encrypted message to encryption payload`() {
         val hex =
-            "b055a28c9f86e9afca4d8da6d94f012b7ea3d505828072cab81523075a942787464ca7183a5069ad0fc1a6e2c941d6626cbfca0224c170ed24f3e810794cf5edee196c5ad4484b915649b7118d7f6d8e45b4ee7cbe7b3f832b6f5e10b51907755b0312dc2cd6368d448d90bb3557db6cc9f072a9da9f46de919f1abbfed7517dc7b176a80061d27cd7fc6cec04436e7fe029cd5b8be916456ae09abd6b7cab175b7de9d85b44a13109534083343b146a67c7d106870e7656d828073c45018632651f1e8ac807cab3d47549dbc70195477b2afb834a42ae83e32d6b5c0c5b2d568bff0b49fc812a43b27194689e9cc50d7b4e714b761c09a8433b432ebd622794aa94f8b96d0d87e66c1efeff1380c436a37e55beff36b50ef13ea1b6183e6d60ccac7b2ff3ac0ce84b9b73ca33eae26c42c26c73e8da6d138471c0adb0916aa51d00d195c9af1950f29b399fa163b9518f8be7a7c3dfbd9bba7f6efacfc023c4b4f7badebcf3d105a575995f2cc700d97dc72ebc428e533b9d973fd3efd3f862deb55d8a4733f9a1533390fa6ca2a8924536a6218a20e3ab4be2027df3e3f9ea10236fdd993216a811b06f138ab0d46949cafebbe0f79c357addf6d251633841d97f2eff9d2ca37b2578ae77a14bebe8a3d7188303c3de536c70cbc954c473d7e389391d8a4e62e1ddd8b257236ba2530b57def27f78aa8246b07e93349f161f237080a5a37c8631884dd2ce1499cfc8c7abff992aba43dcb6ddb11ec4c07e4629693609310443251c843bfec25295c4d83ef1eeb8bb0ca732f8b4aa7f571224f87e47ffbb20ce690bb0c13a50f028523cf95a1dedfd5f237b7cfae6e9e88bb66874b6aa9c1377b0b74856353af10caf3cf15f205bb3abbdbe4f03562998d8aa73a1e00cce3f8285b7d8b310c622f6debeac9b695408b4decc17c5843eaf548981745464e0d573476d492f559d84a2fd09adfd266d38597822cd4af9b5518ff53fb5f0be9e2e0ed972b20256bab817198a0b3ce62fa8d4abb1fbe714a90453a6e9104e109ad3aa3ec573f127816ad41fdc4d044c789a9efff98a67484d4184d5b2a655ec8c2ba5a8335477286401d6fc03f28d7d38e79f440407dc7774c73b08322f9f18177397d540569d73e07672de55651d8e24cbd47056fe51b8b7096a24f65b61de2c3e20bf9f7d3871257d0b60eace9eec4a8c86a73833bd9f313c367e829d89898b3e9854b43de0defce47c96222ceafe7a408c05283a8b8776e9883d52a9f42172e1ea5a8fe0d78b953bd2cd"
+            "ee16ccdca42d0706a124ea909bb112c87ef187e0b0c7a242f0471d8704579681503df80040d22a1c4f7f678f5cbfbe39d1e95427bda511833540062f16e5eb86fff46518618dd10b7f70ff11d16bea2589a59968eecd764a1e9745c6e9eca64ad89ccc16d52a3a107494940ca3219a14170e74dcbd1d8c218a4b6e6c9dbe22e2a844519ade8e1f48dc106d42051c6674ba14cda1c35af85b18c58b78f3574c33e627f18e23ecebb98207086af8a9f3b384aa8cc0eec757b398f046a0815e91e7df25630e51efd76d202478f3c42a8fe8989a19827f2d8e732d5eaabd464b1293fda6f058cd6572ce80377f1e601609216fbe1f5670c84f61eaae9b8b11e8f578ab44af379c2b2e305a478c109ce841222af295033c4559c4659fad570d996549df14723e63c30bb3f8ee8ce47249301c5875f7e44e0c8888f17bc3e33f14a5aaf6b5354d159a80d19f70b7bfc5452a21588760f6521a7ed2f3df9fa99d990e856aa218adad4265507642136727be59db0c9890b5c213f91587e981cba51a561b9110f0a41378dfbed76b3014cb19f129f1a1b56a0534493f754655615223d1c7de93918d137e8da067719f8f14749fb47d234a5ccc51c850a16c36f203952a5114a7446fb57795bccf7064b9e9d19dbe5b8110db9af39bfef85fa64297119c39323192faf1ffd6876105a58608eea8a62c42a27f28d04a5debb4f73c2e7645aede615b01900e58b284b206baf0286c2cef0357845ed283beb75c97d6dc7966332a34ccda6cfdad9e8340fa11923abb2c0922b92b6735ba44ffdca0b1e22433fc7f8651029a0a6ed780ee21659977850b8da18929a313dcc46a11a1907345a12be0ccb654d1a82f64d8909121a5fdadbeac31a452bf15f25dd570e309de93a5bf311c4acfc42ab367c21e09e994ddefcd994b3dcf61c58eca81022ae1863ba48f5671ba2e96a3cbb539273386f8078e7a8a16999f353f8fd0e44353522dfe89a82b222c4bfaf9807a76f43e5e511a25b3baaf4adbf1fc1ea341c63b75b65ae4b906c383c04ce27eecb88dd256e0fbd6c0fb772dfea15880e61cbd3ade0a9059ff7585a31bbc793ed6624173a170586b7a3f9450e1b7676afafe434e10d425de28e91fe95abe64e388b32c4828c380d0b2f28d2eb435d00ef2f0b914e67a2857f000726e5249115e877bc8011fbcd4c3ceef23e79103ceb5d1b4109ff52dd70bcfbbca83864a9fb6bf5a03b177d879fd0241df7fde3577b240bd977e0d2f91569fe45c1aedeb2425184bb5122cf831bc35"
 
         val pubKeyStartIndex = EncryptionPayload.ivLength
         val macStartIndex = pubKeyStartIndex + EncryptionPayload.publicKeyLength
@@ -78,17 +60,12 @@ class AuthenticatedEncryptionCodecTest {
             EncryptionPayload(iv = iv, publicKey = publicKey, mac = mac, cipherText = cipherText)
 
         assertEquals(payload.iv.length, 32)
-        assertEquals(payload.iv, "b055a28c9f86e9afca4d8da6d94f012b")
-
         assertEquals(payload.publicKey.length, 64)
-        assertEquals(payload.publicKey, "7ea3d505828072cab81523075a942787464ca7183a5069ad0fc1a6e2c941d662")
-
         assertEquals(payload.mac.length, 64)
-        assertEquals(payload.mac, "6cbfca0224c170ed24f3e810794cf5edee196c5ad4484b915649b7118d7f6d8e")
 
         println(payload)
 
-        val sharedKey = "72852cd86c9c889d26b7b622050eca328943c228efc942b6e316dff213ed9b4e"
+        val sharedKey = "09c8154fa949b6bc8a56a7e44b6aa604f3c2617e7663bcc02faa9263411eff2b"
 
         val json = codec.decrypt(payload, sharedKey)
 

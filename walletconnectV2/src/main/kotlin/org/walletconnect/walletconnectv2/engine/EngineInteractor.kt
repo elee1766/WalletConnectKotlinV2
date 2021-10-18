@@ -3,15 +3,14 @@ package org.walletconnect.walletconnectv2.engine
 import com.tinder.scarlet.Stream
 import com.tinder.scarlet.WebSocket
 import org.json.JSONObject
-import org.walletconnect.walletconnectv2.clientSync.PreSettlementSession
-import org.walletconnect.walletconnectv2.clientSync.pairing.SettledPairingSequence
-import org.walletconnect.walletconnectv2.clientSync.pairing.proposal.PairingProposedPermissions
-import org.walletconnect.walletconnectv2.clientSync.session.Session
-import org.walletconnect.walletconnectv2.clientSync.session.SettledSessionSequence
-import org.walletconnect.walletconnectv2.clientSync.session.proposal.SessionProposedPermissions
-import org.walletconnect.walletconnectv2.clientSync.session.success.RelayProtocolOptions
-import org.walletconnect.walletconnectv2.clientSync.session.success.SessionState
+import org.walletconnect.walletconnectv2.clientcomm.pairing.SettledPairingSequence
+import org.walletconnect.walletconnectv2.clientcomm.session.SettledSessionSequence
+import org.walletconnect.walletconnectv2.clientcomm.PreSettlementSession
 import org.walletconnect.walletconnectv2.clientcomm.pairing.proposal.PairingProposedPermissions
+import org.walletconnect.walletconnectv2.clientcomm.session.RelayProtocolOptions
+import org.walletconnect.walletconnectv2.clientcomm.session.Session
+import org.walletconnect.walletconnectv2.clientcomm.session.proposal.SessionProposedPermissions
+import org.walletconnect.walletconnectv2.clientcomm.session.success.SessionState
 import org.walletconnect.walletconnectv2.common.Expiry
 import org.walletconnect.walletconnectv2.common.Topic
 import org.walletconnect.walletconnectv2.common.toApprove
@@ -22,7 +21,6 @@ import org.walletconnect.walletconnectv2.crypto.codec.AuthenticatedEncryptionCod
 import org.walletconnect.walletconnectv2.crypto.data.EncryptionPayload
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
 import org.walletconnect.walletconnectv2.crypto.managers.LazySodiumCryptoManager
-import org.walletconnect.walletconnectv2.crypto.managers.Curve25519CryptoManager
 import org.walletconnect.walletconnectv2.relay.WakuRelayRepository
 import org.walletconnect.walletconnectv2.util.Utils
 import java.util.*
@@ -44,8 +42,8 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
         }
     }
 
-    //    private val crypto: CryptoManager = LazySodiumCryptoManager(keyChain)
-    private val crypto: CryptoManager = Curve25519CryptoManager(keyChain)
+        private val crypto: CryptoManager = LazySodiumCryptoManager(keyChain)
+//    private val crypto: CryptoManager = Curve25519CryptoManager(keyChain)
     private val codec: AuthenticatedEncryptionCodec = AuthenticatedEncryptionCodec()
     //endregion
 
@@ -118,14 +116,15 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
         expiry: Expiry
     ): SettledPairingSequence {
 
-        val settledTopic: Topic = crypto.generateSettledTopic(selfPublicKey, peerPublicKey)
-        val sharedKey: String = crypto.generateSharedKey(selfPublicKey, peerPublicKey)
-        println("Pairing Shared Key: $sharedKey")
+//        val settledTopic: Topic = crypto.generateSettledTopic(selfPublicKey, peerPublicKey)
+//        val sharedKey: String = crypto.generateSharedKey(selfPublicKey, peerPublicKey)
+//        println("Pairing Shared Key: $sharedKey")
+
+        val settledTopic: Topic = crypto.generateSharedKey(selfPublicKey, peerPublicKey)
 
         return SettledPairingSequence(
             settledTopic,
             relay,
-            sharedKey,
             selfPublicKey,
             peerPublicKey,
             permissions to controllerPublicKey,
@@ -164,12 +163,14 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
 
         //SESSION APPROVAL JSON
         println("Kobe Session Approval Json: $sessionApprovalJson\n\n")
-        println("Kobe Shared Key: ${settledSession.sharedKey}\n\n")
+//        println("Kobe Shared Key: ${settledSession.sharedKey}\n\n")
 
         val encryptedJson: EncryptionPayload = codec.encrypt(
             sessionApprovalJson,
-            settledSession.sharedKey,
-            selfPublicKey // should be pairingPublicKey
+            "",
+//            settledSession.sharedKey,
+                    selfPublicKey
+             // should be pairingPublicKey
         )
 
         val encryptedString =
@@ -202,12 +203,13 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
         expiry: Expiry,
         sessionState: SessionState
     ): SettledSessionSequence {
-        val settledTopic: Topic = crypto.generateSettledTopic(selfPublicKey, peerPublicKey)
-        val sharedKey: String = crypto.generateSharedKey(selfPublicKey, peerPublicKey)
+//        val settledTopic: Topic = crypto.generateSettledTopic(selfPublicKey, peerPublicKey)
+//        val sharedKey: String = crypto.generateSharedKey(selfPublicKey, peerPublicKey)
+
+        val settledTopic: Topic = crypto.generateSharedKey(selfPublicKey, peerPublicKey)
         return SettledSessionSequence(
             settledTopic,
             relay,
-            sharedKey,
             selfPublicKey,
             peerPublicKey,
             permissions,

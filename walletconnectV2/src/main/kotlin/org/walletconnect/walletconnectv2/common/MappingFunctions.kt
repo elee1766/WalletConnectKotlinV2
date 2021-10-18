@@ -4,16 +4,16 @@ package org.walletconnect.walletconnectv2.common
 
 import com.squareup.moshi.Moshi
 import org.json.JSONObject
-import org.walletconnect.walletconnectv2.clientSync.PreSettlementPairing
-import org.walletconnect.walletconnectv2.clientSync.PreSettlementSession
-import org.walletconnect.walletconnectv2.clientSync.pairing.Pairing
-import org.walletconnect.walletconnectv2.clientSync.pairing.proposal.PairingProposer
-import org.walletconnect.walletconnectv2.clientSync.pairing.success.PairingParticipant
-import org.walletconnect.walletconnectv2.clientSync.pairing.success.PairingState
-import org.walletconnect.walletconnectv2.clientSync.session.Session
-import org.walletconnect.walletconnectv2.clientSync.session.success.SessionParticipant
+import org.walletconnect.walletconnectv2.clientcomm.PreSettlementPairing
+import org.walletconnect.walletconnectv2.clientcomm.PreSettlementSession
+import org.walletconnect.walletconnectv2.clientcomm.pairing.Pairing
+import org.walletconnect.walletconnectv2.clientcomm.pairing.proposal.PairingProposer
+import org.walletconnect.walletconnectv2.clientcomm.pairing.success.PairingParticipant
+import org.walletconnect.walletconnectv2.clientcomm.pairing.success.PairingState
+import org.walletconnect.walletconnectv2.clientcomm.session.Session
+import org.walletconnect.walletconnectv2.clientcomm.session.success.SessionParticipant
+import org.walletconnect.walletconnectv2.clientcomm.session.success.SessionState
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
-import org.walletconnect.walletconnectv2.clientSync.session.success.SessionState
 import org.walletconnect.walletconnectv2.relay.data.model.Relay
 import java.net.URI
 import kotlin.time.Duration

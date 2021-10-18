@@ -6,7 +6,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.walletconnect.walletconnectv2.client.ClientTypes
 import org.walletconnect.walletconnectv2.client.WalletConnectClientListeners
-import org.walletconnect.walletconnectv2.clientSync.session.Session
+import org.walletconnect.walletconnectv2.clientcomm.session.Session
 import org.walletconnect.walletconnectv2.engine.EngineInteractor
 
 object WalletConnectClient {
