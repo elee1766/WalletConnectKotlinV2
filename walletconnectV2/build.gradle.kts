@@ -3,6 +3,7 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 plugins {
     `java-library`
     kotlin("jvm")
+    kotlin("kapt")
 }
 
 java {
@@ -60,11 +61,12 @@ tasks.check { dependsOn(intTest) }
 //endregion
 
 dependencies {
+    //todo extract to Dependencies
+    "implementation"( "org.whispersystems:curve25519-android:0.5.0")
     coroutines()
     moshi()
     scarlet()
     json()
-    lazySodium()
 
     jUnit5()
     mockk()

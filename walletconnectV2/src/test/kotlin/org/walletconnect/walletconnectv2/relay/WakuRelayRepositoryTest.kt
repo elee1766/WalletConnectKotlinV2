@@ -8,12 +8,12 @@ import kotlinx.coroutines.flow.flowOf
 import org.json.JSONObject
 import org.junit.Rule
 import org.junit.jupiter.api.Test
-import org.walletconnect.walletconnectv2.clientsync.pairing.PreSettlementPairing
+import org.walletconnect.walletconnectv2.clientSync.PreSettlementPairing
 import org.walletconnect.walletconnectv2.common.Expiry
 import org.walletconnect.walletconnectv2.common.Topic
-import org.walletconnect.walletconnectv2.outofband.pairing.Pairing
-import org.walletconnect.walletconnectv2.outofband.pairing.success.PairingParticipant
-import org.walletconnect.walletconnectv2.outofband.pairing.success.PairingState
+import org.walletconnect.walletconnectv2.clientSync.pairing.Pairing
+import org.walletconnect.walletconnectv2.clientSync.pairing.success.PairingParticipant
+import org.walletconnect.walletconnectv2.clientSync.pairing.success.PairingState
 import org.walletconnect.walletconnectv2.relay.data.model.Relay
 import org.walletconnect.walletconnectv2.util.CoroutineTestRule
 import org.walletconnect.walletconnectv2.util.getRandom64ByteHexString
@@ -34,7 +34,7 @@ internal class WakuRelayRepositoryTest {
         val topic = Topic(getRandom64ByteHexString())
         val settledTopic = Topic(getRandom64ByteHexString())
         val preSettlementPairing = PreSettlementPairing.Approve(
-            id = 1,
+            id = 1L,
             params = Pairing.Success(
                 settledTopic = settledTopic,
                 relay = JSONObject(),

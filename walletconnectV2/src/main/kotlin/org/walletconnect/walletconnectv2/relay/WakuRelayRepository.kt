@@ -9,8 +9,8 @@ import com.tinder.scarlet.utils.getRawType
 import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
 import okhttp3.OkHttpClient
 import org.json.JSONObject
-import org.walletconnect.walletconnectv2.clientsync.pairing.PreSettlementPairing
-import org.walletconnect.walletconnectv2.clientsync.session.PreSettlementSession
+import org.walletconnect.walletconnectv2.clientSync.PreSettlementPairing
+import org.walletconnect.walletconnectv2.clientSync.PreSettlementSession
 import org.walletconnect.walletconnectv2.common.*
 import org.walletconnect.walletconnectv2.common.network.adapters.*
 import org.walletconnect.walletconnectv2.crypto.data.EncryptionPayload
@@ -20,15 +20,14 @@ import org.walletconnect.walletconnectv2.util.Utils
 import org.walletconnect.walletconnectv2.util.adapters.FlowStreamAdapter
 import java.util.concurrent.TimeUnit
 
-class WakuRelayRepository internal constructor(
-    private val useTLs: Boolean,
-    private val hostName: String,
-    private val port: Int
-) {
+class WakuRelayRepository internal constructor(private val useTLs: Boolean, private val hostName: String, private val port: Int) {
     //region Move to DI module
     private val okHttpClient = OkHttpClient.Builder()
-        .writeTimeout(500, TimeUnit.MILLISECONDS)
-        .readTimeout(500, TimeUnit.MILLISECONDS)
+        .writeTimeout(TIMEOUT_TIME, TimeUnit.MILLISECONDS)
+        .readTimeout(TIMEOUT_TIME, TimeUnit.MILLISECONDS)
+        .callTimeout(TIMEOUT_TIME, TimeUnit.MILLISECONDS)
+        .connectTimeout(TIMEOUT_TIME, TimeUnit.MILLISECONDS)
+        .pingInterval(2, TimeUnit.SECONDS)
         .build()
     private val moshi: Moshi = Moshi.Builder()
         .addLast { type, _, _ ->
@@ -57,7 +56,7 @@ class WakuRelayRepository internal constructor(
     internal val eventsStream = relay.observeEvents()
     internal val publishAcknowledgement = relay.observePublishAcknowledgement()
     internal val subscribeAcknowledgement = relay.observeSubscribeAcknowledgement()
-    val subscriptionRequest = relay.observeSubscriptionRequest()
+    internal val subscriptionRequest = relay.observeSubscriptionRequest()
     val unsubscribeAcknowledgement = relay.observeUnsubscribeAcknowledgement()
 
     fun publishPairingApproval(
@@ -113,12 +112,11 @@ class WakuRelayRepository internal constructor(
     }
 
     private fun getServerUrl(): String {
-        return (if (useTLs) "wss" else "ws") +
-                "://$hostName" +
-                if (port > 0) ":$port" else ""
+        return (if (useTLs) "wss" else "ws") + "://$hostName" + if (port > 0) ":$port" else ""
     }
 
     companion object {
+        private const val TIMEOUT_TIME = 5000L
         private const val DEFAULT_BACKOFF_MINUTES = 5L
 
         fun initRemote(useTLs: Boolean = false, hostName: String, port: Int = 0) =

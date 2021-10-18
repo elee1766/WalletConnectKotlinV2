@@ -4,19 +4,17 @@ package org.walletconnect.walletconnectv2.common
 
 import com.squareup.moshi.Moshi
 import org.json.JSONObject
-import org.walletconnect.walletconnectv2.clientsync.pairing.PreSettlementPairing
-import org.walletconnect.walletconnectv2.clientsync.session.PreSettlementSession
-import org.walletconnect.walletconnectv2.crypto.CryptoManager
+import org.walletconnect.walletconnectv2.clientSync.PreSettlementPairing
+import org.walletconnect.walletconnectv2.clientSync.PreSettlementSession
+import org.walletconnect.walletconnectv2.clientSync.pairing.Pairing
+import org.walletconnect.walletconnectv2.clientSync.pairing.proposal.PairingProposer
+import org.walletconnect.walletconnectv2.clientSync.pairing.success.PairingParticipant
+import org.walletconnect.walletconnectv2.clientSync.pairing.success.PairingState
+import org.walletconnect.walletconnectv2.clientSync.session.Session
+import org.walletconnect.walletconnectv2.clientSync.session.success.SessionParticipant
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
-import org.walletconnect.walletconnectv2.outofband.pairing.Pairing
-import org.walletconnect.walletconnectv2.outofband.pairing.proposal.PairingProposer
-import org.walletconnect.walletconnectv2.outofband.pairing.success.PairingParticipant
-import org.walletconnect.walletconnectv2.outofband.pairing.success.PairingState
-import org.walletconnect.walletconnectv2.pubsub.Session
-import org.walletconnect.walletconnectv2.pubsub.success.SessionParticipant
-import org.walletconnect.walletconnectv2.pubsub.success.SessionState
+import org.walletconnect.walletconnectv2.clientSync.session.success.SessionState
 import org.walletconnect.walletconnectv2.relay.data.model.Relay
-import org.walletconnect.walletconnectv2.util.Utils
 import java.net.URI
 import kotlin.time.Duration
 
@@ -55,7 +53,7 @@ internal fun Pairing.Proposal.toPairingSuccess(
 }
 
 internal fun Pairing.Proposal.toApprove(
-    id: Int,
+    id: Long,
     settleTopic: Topic,
     expiry: Expiry,
     selfPublicKey: PublicKey
@@ -66,11 +64,7 @@ internal fun Pairing.Proposal.toApprove(
     )
 }
 
-internal fun PreSettlementPairing.Approve.toRelayPublishRequest(
-    id: Int,
-    topic: Topic,
-    moshi: Moshi
-): Relay.Publish.Request {
+internal fun PreSettlementPairing.Approve.toRelayPublishRequest(id: Long, topic: Topic, moshi: Moshi): Relay.Publish.Request {
     val pairingApproveJson = moshi.adapter(PreSettlementPairing.Approve::class.java).toJson(this)
     val hexEncodedJson = pairingApproveJson.encodeToByteArray().joinToString(separator = "") {
         String.format("%02X", it)
@@ -82,28 +76,25 @@ internal fun PreSettlementPairing.Approve.toRelayPublishRequest(
     )
 }
 
-internal fun Session.SessionProposal.toApprove(
-    id: Int,
+internal fun Session.Proposal.toApprove(
+    id: Long,
     expiry: Expiry,
     selfPublicKey: PublicKey,
-    state: SessionState,
-    settledTopic: Topic
+    state: SessionState
 ): PreSettlementSession.Approve {
     return PreSettlementSession.Approve(
         id = id,
-        params = this.toSessionSuccess(expiry, selfPublicKey, state, settledTopic)
+        params = this.toSessionSuccess(expiry, selfPublicKey, state)
     )
 }
 
-private fun Session.SessionProposal.toSessionSuccess(
+private fun Session.Proposal.toSessionSuccess(
     expiry: Expiry,
     selfPublicKey: PublicKey,
-    state: SessionState,
-    settledTopic: Topic
+    state: SessionState
 ): Session.Success =
     Session.Success(
         relay = relay,
-//        settledTopic = settledTopic,
         state = state,
         expiry = expiry,
         responder = SessionParticipant(selfPublicKey.keyAsHex)

@@ -10,7 +10,14 @@ interface CryptoManager {
 
     fun generateKeyPair(): PublicKey
 
-    fun generateSettledTopic(self: PublicKey, peer: PublicKey, overrideTopic: String? = null): Topic
+    fun generateSettledTopic(
+        selfPublic: PublicKey,
+        peerPublic: PublicKey,
+        overrideTopic: String? = null
+    ): Topic
 
-    fun generateSharedKey(self: PublicKey, peer: PublicKey): String
+    fun generateSharedKey(selfPublic: PublicKey, peerPublic: PublicKey): String
+
+    fun encrypt(pubKey: ByteArray, message: ByteArray, signature: ByteArray): ByteArray
+    fun createShared(bytesPeerPublic: ByteArray, bytesSelfPrivate: ByteArray): ByteArray
 }

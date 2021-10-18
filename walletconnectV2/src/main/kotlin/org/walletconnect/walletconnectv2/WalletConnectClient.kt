@@ -4,9 +4,10 @@ import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
+import org.walletconnect.walletconnectv2.client.ClientTypes
+import org.walletconnect.walletconnectv2.client.WalletConnectClientListeners
+import org.walletconnect.walletconnectv2.clientSync.session.Session
 import org.walletconnect.walletconnectv2.engine.EngineInteractor
-import org.walletconnect.walletconnectv2.outofband.client.ClientTypes
-import org.walletconnect.walletconnectv2.pubsub.Session
 
 object WalletConnectClient {
     private val job = SupervisorJob()
@@ -31,7 +32,7 @@ object WalletConnectClient {
         }
     }
 
-    fun approve(proposal: Session.SessionProposal) {
+    fun approve(proposal: Session.Proposal) {
        engineInteractor.approve(proposal)
     }
 }

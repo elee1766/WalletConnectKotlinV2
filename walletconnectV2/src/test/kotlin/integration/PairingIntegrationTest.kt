@@ -2,47 +2,90 @@ package integration
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
-import org.json.JSONObject
+import org.walletconnect.walletconnectv2.clientSync.session.Session
+import org.walletconnect.walletconnectv2.clientSync.session.proposal.SessionProposedPermissions
+import org.walletconnect.walletconnectv2.clientSync.session.proposal.SessionProposer
+import org.walletconnect.walletconnectv2.clientSync.session.proposal.SessionSignal
+import org.walletconnect.walletconnectv2.clientSync.session.success.RelayProtocolOptions
 import org.walletconnect.walletconnectv2.common.Topic
 import org.walletconnect.walletconnectv2.common.Ttl
 import org.walletconnect.walletconnectv2.engine.EngineInteractor
-import org.walletconnect.walletconnectv2.outofband.pairing.proposal.JsonRPC
-import org.walletconnect.walletconnectv2.pubsub.RelayProtocolOptions
-import org.walletconnect.walletconnectv2.pubsub.Session
-import org.walletconnect.walletconnectv2.pubsub.proposal.*
 import java.time.Duration
 import kotlin.system.exitProcess
 
 fun main() {
-//    pairTest()
-    approveSessionTest()
+    pairTest()
+//    approveSessionTest()
+}
+
+private fun pairTest() {
+    val job = SupervisorJob()
+    val scope = CoroutineScope(job + Dispatchers.IO)
+    val engine = EngineInteractor(true, "relay.walletconnect.org")
+    val uri =
+        "wc:79fe51a9e27327e62bba7f098f078a92d6b07aaa74da012dc9b20f63af09c519@2?controller=false&publicKey=618d1607dd6a1504c2cfc0847af5a8009e3884820f67dd692300ca93ae405b72&relay=%7B%22protocol%22%3A%22waku%22%7D"
+    scope.launch {
+        engine.pair(uri)
+
+        try {
+            withTimeout(Duration.ofMinutes(20).toMillis()) {
+                val pairDeferred = async(Dispatchers.IO) {
+                    engine.publishAcknowledgement.collect {
+                        println("Publish Acknowledgement: $it")
+                        require(it.result) {
+                            "Acknowledgement from Relay returned false"
+                        }
+                    }
+                }
+
+                val subscribeDeferred = async(Dispatchers.IO) {
+                    engine.subscribeAcknowledgement.collect {
+                        println("Subscribe Acknowledgement $it")
+                        require(it.result.id.isNotBlank()) {
+                            "Acknowledgement from Relay returned false"
+                        }
+                    }
+                }
+
+                val subscriptionDeferred = async(Dispatchers.IO) {
+                    engine.subscriptionRequest.collect {
+                        println("Subscription Request $it")
+                    }
+                }
+
+                listOf(pairDeferred, subscribeDeferred, subscriptionDeferred).awaitAll()
+            }
+        } catch (timeoutException: TimeoutCancellationException) {
+            println("timed out")
+            exitProcess(0)
+        }
+    }
 }
 
 fun approveSessionTest() {
     val job = SupervisorJob()
     val scope = CoroutineScope(job + Dispatchers.IO)
-    val engine =
-        EngineInteractor(true, "relay.walletconnect.org")//?apiKey=c4f79cc821944d9680842e34466bfbd")
+    val engine = EngineInteractor(true, "relay.walletconnect.org")
 
     engine.approve(
-        Session.SessionProposal(
-            topic = Topic("cf62edd89acd1d08639dd5f094182a1f84b63d072ada79042c7c8016edb80db4"),
+        Session.Proposal(
+            topic = Topic("69bba8737e4c7d8715b0ea92fe044ba291a359c24a3cde3e240bc8ec81fa0757"),
             relay = RelayProtocolOptions(protocol = "waku"),
             proposer = SessionProposer(
-                publicKey = "30e0f1d9d3ea5f3b60ee7d654dafdafcc3254d9acc01b8714d87a4138bd57a3e",
-                controller = false
+                publicKey = "fa75874568a6f347229c5936f34ac7e2117f5233e13e3e418332687acd56382c",
+                controller = false, null
             ),
-            signal = SessionSignal(params = SessionSignalParams(topic = "df3e0cbcd8171102fd331b8c11cfe2c80d7db003800b6b01e58eab0b00155a81")),
+            signal = SessionSignal(params = SessionSignal.Params(topic = Topic("15a66762d0a589a2330c73a627a8b83668f3b1eb7f172da1bedf045e09108aec"))),
             permissions = SessionProposedPermissions(
-                blockchain = Blockchain(chains = listOf("eip155:42")),
-                jsonRPC = JsonRPC(
+                blockchain = SessionProposedPermissions.Blockchain(chains = listOf("eip155:42")),
+                jsonRpc = SessionProposedPermissions.JsonRpc(
                     methods = listOf(
                         "eth_sendTransaction",
                         "personal_sign",
                         "eth_signTypedData"
                     )
                 ),
-                notifications = Notifications(types = listOf())
+                notifications = SessionProposedPermissions.Notifications(types = listOf())
             ),
             ttl = Ttl(604800)
         )
@@ -63,61 +106,6 @@ fun approveSessionTest() {
                 }
 
                 pairDeferred.await()
-            }
-        } catch (timeoutException: TimeoutCancellationException) {
-            println("timed out")
-            exitProcess(0)
-        }
-    }
-}
-
-private fun pairTest() {
-    val job = SupervisorJob()
-    val scope = CoroutineScope(job + Dispatchers.IO)
-    val engine =
-        EngineInteractor(
-            true,
-            "relay.walletconnect.org"
-        )//?apiKey=c4f79cc821944d9680842e34466bfbd")
-    val uri =
-        "wc:fa96be34a0e2f0076adb50cae5aa382d8a44f378f32b0438780efac09699dfe3@2?controller=false&publicKey=c3d726889e9c41e8cd9e32c633fe1ece34dda83c3077a5d59edef246bd5c4948&relay=%7B%22protocol%22%3A%22waku%22%7D"
-
-    scope.launch {
-        engine.pair(uri)
-
-        try {
-            withTimeout(Duration.ofMinutes(2).toMillis()) {
-
-                val pairDeferred = async(Dispatchers.IO) {
-                    engine.publishAcknowledgement.collect {
-                        println("Publish Acknowledgement: $it")
-                        require(it.result) {
-                            "Acknowledgement from Relay returned false"
-                        }
-                    }
-                }
-
-
-                val subDeferred = async(Dispatchers.IO) {
-                    engine.subscribeAcknowledgement.collect {
-                        println("Subscribe Acknowledgement $it\n")
-                        require(it.result.id.isNotBlank()) {
-                            "Acknowledgement from Relay returned false"
-                        }
-                    }
-                }
-
-//                println("Session proposal")
-//
-//                engine.subscriptionRequest.collect {
-//                    println("Session proposal response $it")
-//
-//                    require(it.params.data.message.isNotBlank()) {
-//                        "Acknowledgement from Relay returned false"
-//                    }
-//                }
-
-                listOf(pairDeferred, subDeferred).awaitAll()
             }
         } catch (timeoutException: TimeoutCancellationException) {
             println("timed out")

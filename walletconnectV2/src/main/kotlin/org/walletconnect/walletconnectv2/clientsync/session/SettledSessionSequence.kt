@@ -1,12 +1,11 @@
-package org.walletconnect.walletconnectv2.clientsync.session
+package org.walletconnect.walletconnectv2.clientSync.session
 
-import org.json.JSONObject
+import org.walletconnect.walletconnectv2.clientSync.session.proposal.SessionProposedPermissions
+import org.walletconnect.walletconnectv2.clientSync.session.success.RelayProtocolOptions
 import org.walletconnect.walletconnectv2.common.Expiry
 import org.walletconnect.walletconnectv2.common.Topic
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
-import org.walletconnect.walletconnectv2.pubsub.RelayProtocolOptions
-import org.walletconnect.walletconnectv2.pubsub.proposal.SessionProposedPermissions
-import org.walletconnect.walletconnectv2.pubsub.success.SessionState
+import org.walletconnect.walletconnectv2.clientSync.session.success.SessionState
 
 data class SettledSessionSequence(
     val settledTopic: Topic,

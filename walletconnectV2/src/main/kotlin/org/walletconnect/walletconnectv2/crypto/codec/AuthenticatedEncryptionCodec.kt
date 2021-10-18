@@ -1,9 +1,10 @@
 package org.walletconnect.walletconnectv2.crypto.codec
 
-import okio.Utf8
 import org.walletconnect.walletconnectv2.crypto.Codec
 import org.walletconnect.walletconnectv2.crypto.data.EncryptionPayload
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
+import org.walletconnect.walletconnectv2.util.Utils.bytesToHex
+import org.walletconnect.walletconnectv2.util.Utils.hexToBytes
 import java.security.MessageDigest
 import java.security.SecureRandom
 import java.util.*
@@ -33,27 +34,33 @@ class AuthenticatedEncryptionCodec : Codec {
         val cipherText: ByteArray = cipher.doFinal(data)
 
         val computedMac: String =
-            computeHmac(cipherText, iv, authenticationKey, selfPublicKey.keyAsHex.toByteArray())
+            computeHmac(cipherText, iv, authenticationKey, selfPublicKey.keyAsHex.hexToBytes())
 
         return EncryptionPayload(
-            iv = iv.toHexString(),
+            iv = iv.bytesToHex(),
             publicKey = selfPublicKey.keyAsHex,
             mac = computedMac,
-            cipherText = cipherText.toHexString()
+            cipherText = cipherText.bytesToHex()
         )
     }
 
     override fun decrypt(
         payload: EncryptionPayload,
-        sharedKey: String,
-        publicKey: PublicKey
+        sharedKey: String
     ): String {
+
         val (encryptionKey, authenticationKey) = getKeys(sharedKey)
 
-        val data = payload.cipherText.toByteArray()
-        val iv = payload.iv.toByteArray()
+        val data = payload.cipherText.hexToBytes()
+        val iv = payload.iv.hexToBytes()
+
+        println("PUBLIC: ${payload.publicKey}")
+
         val computedHmac =
-            computeHmac(data, iv, authenticationKey, publicKey.keyAsHex.toByteArray())
+            computeHmac(data, iv, authenticationKey, payload.publicKey.hexToBytes())
+
+        println("computed mac: $computedHmac")
+        println("payload mac: ${payload.mac.lowercase(Locale.getDefault())}")
 
         if (computedHmac != payload.mac.lowercase(Locale.getDefault())) {
             throw Exception("Invalid Hmac")
@@ -70,8 +77,8 @@ class AuthenticatedEncryptionCodec : Codec {
     }
 
     private fun getKeys(sharedKey: String): Pair<ByteArray, ByteArray> {
-        val hexKey = sharedKey.encodeToByteArray()
-        val messageDigest: MessageDigest = MessageDigest.getInstance(HASH_ALGORITHM)
+        val hexKey = sharedKey.hexToBytes()
+        val messageDigest: MessageDigest = MessageDigest.getInstance("SHA-512")
         val hashedKey: ByteArray = messageDigest.digest(hexKey)
 
         val aesKey: ByteArray = hashedKey.sliceArray(0..31)
@@ -89,58 +96,8 @@ class AuthenticatedEncryptionCodec : Codec {
         val mac = Mac.getInstance(MAC_ALGORITHM)
         val payload = iv + selfPublicKey + data
         mac.init(SecretKeySpec(key, MAC_ALGORITHM))
-        return mac.doFinal(payload).toHexString()
+        return mac.doFinal(payload).bytesToHex()
     }
-
-    private fun ByteArray.toHexString(): String = toHexString(this, this.size)
-
-    private fun toHexString(
-        input: ByteArray,
-        length: Int
-    ): String =
-        StringBuilder().apply {
-            for (i in 0 until 0 + length) {
-                append(String.format("%02x", input[i] and 0xFF))
-            }
-        }.toString()
-
-    private infix fun Byte.and(mask: Int): Int = toInt() and mask
-
-    private fun String.toByteArray(): ByteArray = hexStringToByteArray(this)
-
-    private fun hexStringToByteArray(input: String): ByteArray {
-        val cleanInput: String = cleanHexPrefix(input)
-        val len = cleanInput.length
-        if (len == 0) {
-            return byteArrayOf()
-        }
-        val data: ByteArray
-        val startIdx: Int
-        if (len % 2 != 0) {
-            data = ByteArray(len / 2 + 1)
-            data[0] = Character.digit(cleanInput[0], 16).toByte()
-            startIdx = 1
-        } else {
-            data = ByteArray(len / 2)
-            startIdx = 0
-        }
-        var i = startIdx
-        while (i < len) {
-            data[(i + 1) / 2] = ((Character.digit(cleanInput[i], 16) shl 4)
-                    + Character.digit(cleanInput[i + 1], 16)).toByte()
-            i += 2
-        }
-        return data
-    }
-
-    private fun cleanHexPrefix(input: String): String =
-        if (containsHexPrefix(input)) {
-            input.substring(2)
-        } else {
-            input
-        }
-
-    private fun containsHexPrefix(input: String): Boolean = input.startsWith("0x")
 
     private fun randomBytes(size: Int): ByteArray {
         val secureRandom = SecureRandom()
