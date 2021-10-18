@@ -13,6 +13,7 @@ import org.walletconnect.walletconnectv2.crypto.KeyChain
 import org.walletconnect.walletconnectv2.crypto.data.PrivateKey
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
 import java.nio.charset.StandardCharsets
+import java.security.MessageDigest
 
 class LazySodiumCryptoManager(private val keyChain: KeyChain): CryptoManager {
     private val lazySodium = LazySodiumJava(SodiumJava(LibraryLoader.Mode.PREFER_BUNDLED), StandardCharsets.UTF_8)
@@ -35,13 +36,15 @@ class LazySodiumCryptoManager(private val keyChain: KeyChain): CryptoManager {
 
     override fun generateSharedKey(self: PublicKey, peer: PublicKey, overrideTopic: String?): Topic {
         val (publicKey, privateKey) = getKeyPair(self)
-        val keyPair = KeyPair(privateKey.toKey(), peer.toKey())
-        val sharedKey = lazySodium.cryptoBoxBeforeNm(keyPair)
-        return setEncryptionKeys(sharedKey, publicKey, overrideTopic)
+        val sharedKey = lazySodium.cryptoScalarMult(privateKey.toKey(), peer.toKey())
+
+        return setEncryptionKeys(sharedKey.asHexString.toLowerCase().also { println("Talha_SharedKey: $it") }, publicKey, overrideTopic)
     }
 
     internal fun setEncryptionKeys(sharedKey: String, selfPublicKey: PublicKey, overrideTopic: String?): Topic {
-        val topic = Topic(overrideTopic ?: lazySodium.cryptoHashSha256(sharedKey))
+        val messageDigest: MessageDigest = MessageDigest.getInstance("SHA-256")
+        val hashedBytes: ByteArray = messageDigest.digest(sharedKey.hexToBytes())
+        val topic = Topic(hashedBytes.bytesToHex())
         val sharedKeyObject = object: WCKey {
             override val keyAsHex: String = sharedKey
         }
@@ -50,6 +53,30 @@ class LazySodiumCryptoManager(private val keyChain: KeyChain): CryptoManager {
         keyChain.setKey(topic.topicValue, keys)
 
         return topic
+    }
+
+    fun String.hexToBytes(): ByteArray {
+        val len = this.length
+        val data = ByteArray(len / 2)
+        var i = 0
+        while (i < len) {
+            data[i / 2] = ((Character.digit(this[i], 16) shl 4)
+                    + Character.digit(this[i + 1], 16)).toByte()
+            i += 2
+        }
+        return data
+    }
+
+    fun ByteArray.bytesToHex(): String {
+        val hexString = StringBuilder(2 * this.size)
+        for (i in this.indices) {
+            val hex = Integer.toHexString(0xff and this[i].toInt())
+            if (hex.length == 1) {
+                hexString.append('0')
+            }
+            hexString.append(hex)
+        }
+        return hexString.toString()
     }
 
     internal fun setKeyPair(publicKey: PublicKey, privateKey: PrivateKey) {

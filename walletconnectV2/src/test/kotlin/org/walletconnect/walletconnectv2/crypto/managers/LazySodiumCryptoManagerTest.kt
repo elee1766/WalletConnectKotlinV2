@@ -1,7 +1,10 @@
 package org.walletconnect.walletconnectv2.crypto.managers
 
+import com.goterl.lazysodium.LazySodiumJava
+import com.goterl.lazysodium.SodiumJava
 import com.goterl.lazysodium.utils.HexMessageEncoder
 import com.goterl.lazysodium.utils.Key
+import com.goterl.lazysodium.utils.LibraryLoader
 import io.mockk.spyk
 import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
@@ -9,6 +12,7 @@ import org.junit.jupiter.api.Test
 import org.walletconnect.walletconnectv2.crypto.KeyChain
 import org.walletconnect.walletconnectv2.crypto.data.PrivateKey
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
+import java.nio.charset.StandardCharsets
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
@@ -102,6 +106,13 @@ internal class LazySodiumCryptoManagerTest {
 
         assertEquals(publicKeyString, splitPublicKey.keyAsHex)
         assertEquals(privateKeyString, splitPrivateKey.keyAsHex)
+    }
+
+    @Test
+    fun `Decrypt Payload`() {
+        val lazySodium = LazySodiumJava(SodiumJava(LibraryLoader.Mode.PREFER_BUNDLED), StandardCharsets.UTF_8)
+
+        lazySodium.
     }
 
     private fun String.hexStringToByteArray(): ByteArray {
