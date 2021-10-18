@@ -1,4 +1,4 @@
-package org.walletconnect.walletconnectv2.outofband.client
+package org.walletconnect.walletconnectv2.client
 
 sealed class ClientTypes {
     data class InitialParams(

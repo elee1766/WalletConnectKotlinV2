@@ -11,6 +11,7 @@ import org.walletconnect.walletconnectv2.clientSync.session.SettledSessionSequen
 import org.walletconnect.walletconnectv2.clientSync.session.proposal.SessionProposedPermissions
 import org.walletconnect.walletconnectv2.clientSync.session.success.RelayProtocolOptions
 import org.walletconnect.walletconnectv2.clientSync.session.success.SessionState
+import org.walletconnect.walletconnectv2.clientcomm.pairing.proposal.PairingProposedPermissions
 import org.walletconnect.walletconnectv2.common.Expiry
 import org.walletconnect.walletconnectv2.common.Topic
 import org.walletconnect.walletconnectv2.common.toApprove
@@ -20,6 +21,7 @@ import org.walletconnect.walletconnectv2.crypto.KeyChain
 import org.walletconnect.walletconnectv2.crypto.codec.AuthenticatedEncryptionCodec
 import org.walletconnect.walletconnectv2.crypto.data.EncryptionPayload
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
+import org.walletconnect.walletconnectv2.crypto.managers.LazySodiumCryptoManager
 import org.walletconnect.walletconnectv2.crypto.managers.Curve25519CryptoManager
 import org.walletconnect.walletconnectv2.relay.WakuRelayRepository
 import org.walletconnect.walletconnectv2.util.Utils
@@ -56,13 +58,8 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
 
     fun pair(uri: String) {
         val pairingProposal = uri.toPairProposal()
-
-        val selfPublicKey = crypto.generateKeyPair() //seflPublic, selfPrivate
-
-        pairingPublicKey = selfPublicKey
-
-        val expiry =
-            Expiry((Calendar.getInstance().timeInMillis / 1000) + pairingProposal.ttl.seconds)
+        val selfPublicKey = crypto.generateKeyPair()
+        val expiry = Expiry((Calendar.getInstance().timeInMillis / 1000) + pairingProposal.ttl.seconds)
 
         val peerPublicKey = PublicKey(pairingProposal.pairingProposer.publicKey)
         val controllerPublicKey = if (pairingProposal.pairingProposer.controller) {
