@@ -23,7 +23,7 @@ private fun pairTest() {
     val scope = CoroutineScope(job + Dispatchers.IO)
     val engine = EngineInteractor(true, "relay.walletconnect.org")
     val uri =
-        "wc:a787d69c01a1db1995cedf6904aadc23e8afe6a391e2e44a628fd1f393275553@2?controller=false&publicKey=7ef187e0b0c7a242f0471d8704579681503df80040d22a1c4f7f678f5cbfbe39&relay=%7B%22protocol%22%3A%22waku%22%7D"
+        "wc:6b650d7790dcba4f66db1df90a296720430e91c1bc57874fef56055403216533@2?controller=false&publicKey=16ef8b8ef1f010d4447b7e089aac0b943d5e2ca94646ddcfa92f4e8e5778cc3e&relay=%7B%22protocol%22%3A%22waku%22%7D"
     scope.launch {
         engine.pair(uri)
 

@@ -1,9 +1,19 @@
 package org.walletconnect.walletconnectv2.crypto.codec
 
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import com.tinder.scarlet.utils.getRawType
 import org.junit.jupiter.api.Test
-import org.walletconnect.walletconnectv2.crypto.KeyChain
+import org.walletconnect.walletconnectv2.clientcomm.pairing.PairingPayload
+import org.walletconnect.walletconnectv2.common.SubscriptionId
+import org.walletconnect.walletconnectv2.common.Topic
+import org.walletconnect.walletconnectv2.common.Ttl
+import org.walletconnect.walletconnectv2.common.network.adapters.SubscriptionIdAdapter
+import org.walletconnect.walletconnectv2.common.network.adapters.TopicAdapter
+import org.walletconnect.walletconnectv2.common.network.adapters.TtlAdapter
 import org.walletconnect.walletconnectv2.crypto.data.EncryptionPayload
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
+import org.walletconnect.walletconnectv2.util.Utils.bytesToHex
 import kotlin.test.assertEquals
 
 class AuthenticatedEncryptionCodecTest {
@@ -43,9 +53,25 @@ class AuthenticatedEncryptionCodecTest {
     }
 
     @Test
+    fun `get auth and hmac keys test`() {
+        val sharedKey = "4b21b43b2e04dbe0105d250f5d72d5d9c28d8de202f240863e268e4ded9e9a6a"
+
+        val decryptioKey = "c237bae5d78d52a6a718202fabfaae1cdfb83dd8a54b575c2e2f3e11fb67fa8b"
+        val hmac = "50e98dc7a1013c3c38f76aaa80dd7ca6c4230a866298415f308c59d4285a6f48"
+
+        val (decryp, auth) = codec.getKeys(sharedKey)
+
+        println(decryp.bytesToHex())
+        println(auth.bytesToHex())
+
+        assertEquals(decryp.bytesToHex(), decryptioKey)
+        assertEquals(auth.bytesToHex(), hmac)
+    }
+
+    @Test
     fun `deserialize encrypted message to encryption payload`() {
         val hex =
-            "ee16ccdca42d0706a124ea909bb112c87ef187e0b0c7a242f0471d8704579681503df80040d22a1c4f7f678f5cbfbe39d1e95427bda511833540062f16e5eb86fff46518618dd10b7f70ff11d16bea2589a59968eecd764a1e9745c6e9eca64ad89ccc16d52a3a107494940ca3219a14170e74dcbd1d8c218a4b6e6c9dbe22e2a844519ade8e1f48dc106d42051c6674ba14cda1c35af85b18c58b78f3574c33e627f18e23ecebb98207086af8a9f3b384aa8cc0eec757b398f046a0815e91e7df25630e51efd76d202478f3c42a8fe8989a19827f2d8e732d5eaabd464b1293fda6f058cd6572ce80377f1e601609216fbe1f5670c84f61eaae9b8b11e8f578ab44af379c2b2e305a478c109ce841222af295033c4559c4659fad570d996549df14723e63c30bb3f8ee8ce47249301c5875f7e44e0c8888f17bc3e33f14a5aaf6b5354d159a80d19f70b7bfc5452a21588760f6521a7ed2f3df9fa99d990e856aa218adad4265507642136727be59db0c9890b5c213f91587e981cba51a561b9110f0a41378dfbed76b3014cb19f129f1a1b56a0534493f754655615223d1c7de93918d137e8da067719f8f14749fb47d234a5ccc51c850a16c36f203952a5114a7446fb57795bccf7064b9e9d19dbe5b8110db9af39bfef85fa64297119c39323192faf1ffd6876105a58608eea8a62c42a27f28d04a5debb4f73c2e7645aede615b01900e58b284b206baf0286c2cef0357845ed283beb75c97d6dc7966332a34ccda6cfdad9e8340fa11923abb2c0922b92b6735ba44ffdca0b1e22433fc7f8651029a0a6ed780ee21659977850b8da18929a313dcc46a11a1907345a12be0ccb654d1a82f64d8909121a5fdadbeac31a452bf15f25dd570e309de93a5bf311c4acfc42ab367c21e09e994ddefcd994b3dcf61c58eca81022ae1863ba48f5671ba2e96a3cbb539273386f8078e7a8a16999f353f8fd0e44353522dfe89a82b222c4bfaf9807a76f43e5e511a25b3baaf4adbf1fc1ea341c63b75b65ae4b906c383c04ce27eecb88dd256e0fbd6c0fb772dfea15880e61cbd3ade0a9059ff7585a31bbc793ed6624173a170586b7a3f9450e1b7676afafe434e10d425de28e91fe95abe64e388b32c4828c380d0b2f28d2eb435d00ef2f0b914e67a2857f000726e5249115e877bc8011fbcd4c3ceef23e79103ceb5d1b4109ff52dd70bcfbbca83864a9fb6bf5a03b177d879fd0241df7fde3577b240bd977e0d2f91569fe45c1aedeb2425184bb5122cf831bc35"
+            "ffbecf819a49a266b262309ad269ae4016ef8b8ef1f010d4447b7e089aac0b943d5e2ca94646ddcfa92f4e8e5778cc3e39e3e876dd95065c5899b95a98512664a8c77853c47d31c2e714e50018f3d1b525dbd2f76cde5bff8b261f343ecb3d956ad9e74819c8729fa1c77be4b5fb7d39ccc697bda421fb90d11315d828e79fca6a27316d3b09f14c7f3483b25b000820e7b64a75e5f59216e5f0ecbc4ec20c53664ad5e967026aa119a32a655e3ff3e110ca4c7e629b845b8ecf7ea6f296a79a6de3dc5794c3a51059bb08b09974501ffcf2d7fddafafd9f1b22e97b6abbb6bcd978a8a87341f33bc662c101947a06c72f6c7709a0a612f46fcd8b5fbce0bdd4c56ca330e6e2802fbf6e3830210f3c1b626863de93fd02857c615436e1b9dc7d36d45bbec8acfb24cd45c46946832d5a7cc20334fd7405dba997daf4725bc849450f197e7e9e2f5e20839ba1f77895b3cbccc279fdc0a9d40156a28ad2adcd6a8afc68f9735c4e7c22c49caf5150f243bab702a71699c9b26420668c81fc5b311488331a4456ba1baf619818b4ecfe6f6de8f80dc42a85c785aa78dd187e82faec549780051551335c651af10f89a3e37103e56a8ebf27f3054e4303a6bce88d7c082bfda897facfd952df5d3d6776370884cb04923c804c99059bb269fdbff3543d89648f39a7cc6fdad61ea0f24deeab420bc65dde6c7a6a3f5fe3775fe4a95a8bf8b70ae946696c808206baf119f0b3142d502c7ca0c102548a1263de2c04bde47aa1a716ae7b00959e300b56d6f0595d1588e07c618b914e3c76cb7d103cd8c6b91ed0aaadc2c129455c07905e5272ea4039660cb8e53a64101dae6e8737a082ac9a9b531a4cbc83e009c1722ca108a26bd193817392890b80cf519f2f14e1fc0e1b47d0b7da47d0635eace28e42456a222da5f2044895914a0b21568d49c222f55b114a558649f094012dbaaabd02ad1aae591d80b8754bb39964f4b9c235166b1ea5c80eb9870e90f073722926f823e5ca72714de10f6f4ed4072bfd3ffc4d32ec0e920edb404b7b1afa1f001d18948fe25562c9b8d52824a4fad20082f28a13e96b7277cb4e7a5ccbbf8095293892b2bac008fcee038765743fb9688abf8affd2477f7de90494ccbba94f6a88a0e0c215d5134b70f41f28754e1b236ab43ec65696fa182fa9525a70e7f42141ec38cfe57d26230b3d520ba2769517c9f8f43a161d38438079b967ab73835865b68a22d3cde7a37fccad1ee3f33ae13bb0f09b4b86ce2ee07823ba793a0fafee"
 
         val pubKeyStartIndex = EncryptionPayload.ivLength
         val macStartIndex = pubKeyStartIndex + EncryptionPayload.publicKeyLength
@@ -63,12 +89,25 @@ class AuthenticatedEncryptionCodecTest {
         assertEquals(payload.publicKey.length, 64)
         assertEquals(payload.mac.length, 64)
 
-        println(payload)
-
-        val sharedKey = "09c8154fa949b6bc8a56a7e44b6aa604f3c2617e7663bcc02faa9263411eff2b"
+        val sharedKey = "b426d6b8b7a57930cae8870179864849d6e89f1e8e801f7ca9a50bc2384ee043"
 
         val json = codec.decrypt(payload, sharedKey)
 
         println(json)
+
+        val moshi =
+            Moshi.Builder().addLast { type, annotations, moshi ->
+                when (type.getRawType().name) {
+                    SubscriptionId::class.qualifiedName -> SubscriptionIdAdapter
+                    Topic::class.qualifiedName -> TopicAdapter
+                    Ttl::class.qualifiedName -> TtlAdapter
+                    else -> null
+                }
+            }.addLast(KotlinJsonAdapterFactory()).build()
+
+        val request: PairingPayload? =
+            moshi.adapter(PairingPayload::class.java).fromJson(json)
+
+        assertEquals(request?.params?.request?.params?.proposer?.publicKey, "37d8c448a2241f21550329f451e8c1901e7dad5135ade604f1e106437843037f")
     }
 }

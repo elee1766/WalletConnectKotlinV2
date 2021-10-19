@@ -72,7 +72,7 @@ internal fun PreSettlementPairing.Approve.toRelayPublishRequest(id: Long, topic:
 
     return Relay.Publish.Request(
         id = id,
-        params = Relay.Publish.Request.Params(topic = topic, message = hexEncodedJson)
+        params = Relay.Publish.Request.Params(topic = topic, message = hexEncodedJson.lowercase())
     )
 }
 

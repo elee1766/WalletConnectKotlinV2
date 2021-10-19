@@ -42,8 +42,7 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
         }
     }
 
-        private val crypto: CryptoManager = LazySodiumCryptoManager(keyChain)
-//    private val crypto: CryptoManager = Curve25519CryptoManager(keyChain)
+    private val crypto: CryptoManager = LazySodiumCryptoManager(keyChain)
     private val codec: AuthenticatedEncryptionCodec = AuthenticatedEncryptionCodec()
     //endregion
 
@@ -57,7 +56,8 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
     fun pair(uri: String) {
         val pairingProposal = uri.toPairProposal()
         val selfPublicKey = crypto.generateKeyPair()
-        val expiry = Expiry((Calendar.getInstance().timeInMillis / 1000) + pairingProposal.ttl.seconds)
+        val expiry =
+            Expiry((Calendar.getInstance().timeInMillis / 1000) + pairingProposal.ttl.seconds)
 
         val peerPublicKey = PublicKey(pairingProposal.pairingProposer.publicKey)
         val controllerPublicKey = if (pairingProposal.pairingProposer.controller) {
@@ -65,6 +65,7 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
         } else {
             selfPublicKey
         }
+
         val settledSequence = settlePairingSequence(
             pairingProposal.relay,
             selfPublicKey,
@@ -115,13 +116,7 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
         controllerPublicKey: PublicKey,
         expiry: Expiry
     ): SettledPairingSequence {
-
-//        val settledTopic: Topic = crypto.generateSettledTopic(selfPublicKey, peerPublicKey)
-//        val sharedKey: String = crypto.generateSharedKey(selfPublicKey, peerPublicKey)
-//        println("Pairing Shared Key: $sharedKey")
-
         val settledTopic: Topic = crypto.generateSharedKey(selfPublicKey, peerPublicKey)
-
         return SettledPairingSequence(
             settledTopic,
             relay,
@@ -169,8 +164,8 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
             sessionApprovalJson,
             "",
 //            settledSession.sharedKey,
-                    selfPublicKey
-             // should be pairingPublicKey
+            selfPublicKey
+            // should be pairingPublicKey
         )
 
         val encryptedString =
@@ -203,9 +198,6 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
         expiry: Expiry,
         sessionState: SessionState
     ): SettledSessionSequence {
-//        val settledTopic: Topic = crypto.generateSettledTopic(selfPublicKey, peerPublicKey)
-//        val sharedKey: String = crypto.generateSharedKey(selfPublicKey, peerPublicKey)
-
         val settledTopic: Topic = crypto.generateSharedKey(selfPublicKey, peerPublicKey)
         return SettledSessionSequence(
             settledTopic,

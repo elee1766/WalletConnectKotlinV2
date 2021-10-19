@@ -48,21 +48,14 @@ class AuthenticatedEncryptionCodec : Codec {
         payload: EncryptionPayload,
         sharedKey: String
     ): String {
-
         val (encryptionKey, authenticationKey) = getKeys(sharedKey)
-
         val data = payload.cipherText.hexToBytes()
         val iv = payload.iv.hexToBytes()
-
-        println("PUBLIC: ${payload.publicKey}")
 
         val computedHmac =
             computeHmac(data, iv, authenticationKey, payload.publicKey.hexToBytes())
 
-        println("computed mac: $computedHmac")
-        println("payload mac: ${payload.mac.lowercase(Locale.getDefault())}")
-
-        if (computedHmac != payload.mac.lowercase(Locale.getDefault())) {
+        if (computedHmac != payload.mac.lowercase()) {
             throw Exception("Invalid Hmac")
         }
 
@@ -76,26 +69,25 @@ class AuthenticatedEncryptionCodec : Codec {
         return String(cipher.doFinal(data), Charsets.UTF_8)
     }
 
-    private fun getKeys(sharedKey: String): Pair<ByteArray, ByteArray> {
+    fun getKeys(sharedKey: String): Pair<ByteArray, ByteArray> {
         val hexKey = sharedKey.hexToBytes()
-        val messageDigest: MessageDigest = MessageDigest.getInstance("SHA-512")
+        val messageDigest: MessageDigest = MessageDigest.getInstance(HASH_ALGORITHM)
         val hashedKey: ByteArray = messageDigest.digest(hexKey)
 
-        val aesKey: ByteArray = hashedKey.sliceArray(0..31)
-        val hmacKey: ByteArray = hashedKey.sliceArray(31..63)
-
+        val aesKey: ByteArray = hashedKey.take(32).toByteArray()
+        val hmacKey: ByteArray = hashedKey.takeLast(32).toByteArray()
         return Pair(aesKey, hmacKey)
     }
 
     private fun computeHmac(
         data: ByteArray,
         iv: ByteArray,
-        key: ByteArray,
-        selfPublicKey: ByteArray
+        authKey: ByteArray,
+        publicKey: ByteArray
     ): String {
         val mac = Mac.getInstance(MAC_ALGORITHM)
-        val payload = iv + selfPublicKey + data
-        mac.init(SecretKeySpec(key, MAC_ALGORITHM))
+        val payload = iv + publicKey + data
+        mac.init(SecretKeySpec(authKey, MAC_ALGORITHM))
         return mac.doFinal(payload).bytesToHex()
     }
 
