@@ -2,6 +2,7 @@ package org.walletconnect.walletconnectv2.engine
 
 import com.tinder.scarlet.Stream
 import com.tinder.scarlet.WebSocket
+import kotlinx.coroutines.flow.map
 import org.json.JSONObject
 import org.walletconnect.walletconnectv2.clientcomm.pairing.SettledPairingSequence
 import org.walletconnect.walletconnectv2.clientcomm.session.SettledSessionSequence
@@ -22,7 +23,7 @@ import org.walletconnect.walletconnectv2.crypto.data.EncryptionPayload
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
 import org.walletconnect.walletconnectv2.crypto.managers.LazySodiumCryptoManager
 import org.walletconnect.walletconnectv2.relay.WakuRelayRepository
-import org.walletconnect.walletconnectv2.util.Utils
+import org.walletconnect.walletconnectv2.util.*
 import java.util.*
 
 class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0) {
@@ -50,6 +51,9 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
     internal val subscribeAcknowledgement = relayRepository.subscribeAcknowledgement
 
     internal val subscriptionRequest = relayRepository.subscriptionRequest //session proposal
+//    internal val sessionProposal = subscriptionRequest.map {
+//        codec.decrypt(it.params.subscriptionData.message.toEncryptionPayload(), crypto.getSharedKey(""))
+//    }
 
     private var pairingPublicKey = PublicKey("")
 
@@ -76,7 +80,7 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
         )
         val preSettlementPairingApprove =
             pairingProposal.toApprove(
-                Utils.generateId(),
+                generateId(),
                 settledSequence.settledTopic,
                 expiry,
                 selfPublicKey
@@ -147,7 +151,7 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
         )
 
         val preSettlementSession: PreSettlementSession.Approve = proposal.toApprove(
-            Utils.generateId(),
+            generateId(),
             expiry,
             selfPublicKey,
             settledSession.state
@@ -208,5 +212,18 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
             expiry,
             sessionState
         )
+    }
+
+    private fun String.toEncryptionPayload(): EncryptionPayload {
+        val pubKeyStartIndex = EncryptionPayload.ivLength
+        val macStartIndex = pubKeyStartIndex + EncryptionPayload.publicKeyLength
+        val cipherTextStartIndex = macStartIndex + EncryptionPayload.macLength
+
+        val iv = this.substring(0, pubKeyStartIndex)
+        val publicKey = this.substring(pubKeyStartIndex, macStartIndex)
+        val mac = this.substring(macStartIndex, cipherTextStartIndex)
+        val cipherText = this.substring(cipherTextStartIndex, this.length)
+
+        return EncryptionPayload(iv, publicKey, mac, cipherText)
     }
 }

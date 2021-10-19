@@ -16,7 +16,7 @@ import org.walletconnect.walletconnectv2.common.network.adapters.*
 import org.walletconnect.walletconnectv2.crypto.data.EncryptionPayload
 import org.walletconnect.walletconnectv2.relay.data.RelayService
 import org.walletconnect.walletconnectv2.relay.data.model.Relay
-import org.walletconnect.walletconnectv2.util.Utils
+import org.walletconnect.walletconnectv2.util.*
 import org.walletconnect.walletconnectv2.util.adapters.FlowStreamAdapter
 import java.util.concurrent.TimeUnit
 
@@ -63,7 +63,7 @@ class WakuRelayRepository internal constructor(private val useTLs: Boolean, priv
         topic: Topic,
         preSettlementPairingApproval: PreSettlementPairing.Approve
     ) {
-        val publishRequest = preSettlementPairingApproval.toRelayPublishRequest(Utils.generateId(), topic, moshi)
+        val publishRequest = preSettlementPairingApproval.toRelayPublishRequest(generateId(), topic, moshi)
         println(
             "Publish Request ${
                 moshi.adapter(Relay.Publish.Request::class.java).toJson(publishRequest)
@@ -86,7 +86,7 @@ class WakuRelayRepository internal constructor(private val useTLs: Boolean, priv
     ) {
         val publishRequest =
             Relay.Publish.Request(
-                id = Utils.generateId(),
+                id = generateId(),
                 params = Relay.Publish.Request.Params(topic = topic, message = encryptedJson)
             )
 
@@ -101,7 +101,7 @@ class WakuRelayRepository internal constructor(private val useTLs: Boolean, priv
 
     fun subscribe(topic: Topic) {
         val subscribeRequest =
-            Relay.Subscribe.Request(id = Utils.generateId(), params = Relay.Subscribe.Request.Params(topic))
+            Relay.Subscribe.Request(id = generateId(), params = Relay.Subscribe.Request.Params(topic))
 
         val subscribeRequestJson =
             moshi.adapter(Relay.Subscribe.Request::class.java).toJson(subscribeRequest)

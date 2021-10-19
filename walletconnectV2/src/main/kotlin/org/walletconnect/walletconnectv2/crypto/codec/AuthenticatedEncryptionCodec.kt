@@ -3,11 +3,10 @@ package org.walletconnect.walletconnectv2.crypto.codec
 import org.walletconnect.walletconnectv2.crypto.Codec
 import org.walletconnect.walletconnectv2.crypto.data.EncryptionPayload
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
-import org.walletconnect.walletconnectv2.util.Utils.bytesToHex
-import org.walletconnect.walletconnectv2.util.Utils.hexToBytes
+import org.walletconnect.walletconnectv2.util.bytesToHex
+import org.walletconnect.walletconnectv2.util.hexToBytes
 import java.security.MessageDigest
 import java.security.SecureRandom
-import java.util.*
 import javax.crypto.Cipher
 import javax.crypto.Mac
 import javax.crypto.spec.IvParameterSpec
@@ -52,8 +51,7 @@ class AuthenticatedEncryptionCodec : Codec {
         val data = payload.cipherText.hexToBytes()
         val iv = payload.iv.hexToBytes()
 
-        val computedHmac =
-            computeHmac(data, iv, authenticationKey, payload.publicKey.hexToBytes())
+        val computedHmac = computeHmac(data, iv, authenticationKey, payload.publicKey.hexToBytes())
 
         if (computedHmac != payload.mac.lowercase()) {
             throw Exception("Invalid Hmac")

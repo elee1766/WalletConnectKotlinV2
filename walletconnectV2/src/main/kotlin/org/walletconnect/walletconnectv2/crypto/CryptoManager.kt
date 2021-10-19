@@ -12,5 +12,5 @@ interface CryptoManager {
 
     fun generateSharedKey(self: PublicKey, peer: PublicKey, overrideTopic: String? = null): Topic
 
-    fun getShared(self: PrivateKey, peer: PublicKey): String
+    fun getSharedKey(self: PrivateKey, peer: PublicKey): String
 }

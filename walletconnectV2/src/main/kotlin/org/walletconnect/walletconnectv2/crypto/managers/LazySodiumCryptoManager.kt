@@ -7,16 +7,15 @@ import com.goterl.lazysodium.utils.HexMessageEncoder
 import com.goterl.lazysodium.utils.Key
 import com.goterl.lazysodium.utils.LibraryLoader
 import org.walletconnect.walletconnectv2.common.Topic
-import org.walletconnect.walletconnectv2.crypto.data.Key as WCKey
 import org.walletconnect.walletconnectv2.crypto.CryptoManager
 import org.walletconnect.walletconnectv2.crypto.KeyChain
 import org.walletconnect.walletconnectv2.crypto.data.PrivateKey
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
-import org.walletconnect.walletconnectv2.util.Utils.bytesToHex
-import org.walletconnect.walletconnectv2.util.Utils.hexToBytes
+import org.walletconnect.walletconnectv2.util.bytesToHex
+import org.walletconnect.walletconnectv2.util.hexToBytes
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
-import java.util.*
+import org.walletconnect.walletconnectv2.crypto.data.Key as WCKey
 
 class LazySodiumCryptoManager(private val keyChain: KeyChain) : CryptoManager {
     private val lazySodium =
@@ -50,7 +49,7 @@ class LazySodiumCryptoManager(private val keyChain: KeyChain) : CryptoManager {
         return setEncryptionKeys(sharedKey.asHexString.lowercase(), publicKey, overrideTopic)
     }
 
-    override fun getShared(self: PrivateKey, peer: PublicKey): String {
+    override fun getSharedKey(self: PrivateKey, peer: PublicKey): String {
         return lazySodium.cryptoScalarMult(self.toKey(), peer.toKey()).asHexString
     }
 
