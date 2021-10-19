@@ -28,7 +28,6 @@ sealed class Session {
         @field:TopicAdapter.Qualifier
         val topic: Topic,
         @Json(name = "relay")
-//        @field:JSONObjectAdapter.Qualifier
         val relay: RelayProtocolOptions,
         @Json(name = "proposer")
         val proposer: SessionProposer,

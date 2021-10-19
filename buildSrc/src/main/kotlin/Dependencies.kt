@@ -42,8 +42,8 @@ fun DependencyHandlerScope.scarlet() {
 
     "testImplementation"("com.tinder.scarlet:websocket-mockwebserver:$scarletVersion")
     "testImplementation"("com.tinder.scarlet:test-utils:$scarletVersion")
-    "intTestImplementation"("com.tinder.scarlet:websocket-mockwebserver:$scarletVersion")
-    "intTestImplementation"("com.tinder.scarlet:test-utils:$scarletVersion")
+//    "intTestImplementation"("com.tinder.scarlet:websocket-mockwebserver:$scarletVersion")
+//    "intTestImplementation"("com.tinder.scarlet:test-utils:$scarletVersion")
 }
 
 fun DependencyHandlerScope.moshi() {
@@ -60,14 +60,22 @@ fun DependencyHandlerScope.json() {
 
 fun DependencyHandlerScope.lazySodium() {
     val lazySodiumVersion = "5.1.1"
+    val lazySodiumAndroidVersion = "5."
     val jnaVersion = "5.9.0"
     val slf4jVersion = "1.7.32"
 
-    "implementation"("com.goterl:lazysodium-java:$lazySodiumVersion")
-    "implementation"("net.java.dev.jna:jna:$jnaVersion")
+//    "implementation"("com.goterl:lazysodium-java:$lazySodiumVersion@aar") {
+//        this.isTransitive = false
+//    }
+//    "implementation"("com.goterl:lazysodium-android:$lazySodiumVersion")
+//    "implementation"("net.java.dev.jna:jna:$jnaVersion@aar")
+//    "implementation"("net.java.dev.jna:jna:5.8.0@aar")
+
+    "implementation"("com.goterl:lazysodium-android:5.0.2@aar")
+    "implementation"("net.java.dev.jna:jna:5.8.0@aar")
 
     "testImplementation"("org.slf4j:slf4j-nop:$slf4jVersion")
-    "intTestImplementation"("org.slf4j:slf4j-nop:$slf4jVersion")
+//    "intTestImplementation"("org.slf4j:slf4j-nop:$slf4jVersion")
 }
 
 fun DependencyHandlerScope.jUnit5() {
@@ -78,15 +86,15 @@ fun DependencyHandlerScope.jUnit5() {
     "testRuntimeOnly"("org.junit.jupiter:junit-jupiter-engine:$jUnit5Version")
     "testImplementation"("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
 
-    "intTestImplementation"(platform("org.junit:junit-bom:$jUnit5Version"))
-    "intTestImplementation"("org.junit.jupiter:junit-jupiter-api:$jUnit5Version")
-    "intTestRuntimeOnly"("org.junit.jupiter:junit-jupiter-engine:$jUnit5Version")
-    "intTestImplementation"("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
+//    "intTestImplementation"(platform("org.junit:junit-bom:$jUnit5Version"))
+//    "intTestImplementation"("org.junit.jupiter:junit-jupiter-api:$jUnit5Version")
+//    "intTestRuntimeOnly"("org.junit.jupiter:junit-jupiter-engine:$jUnit5Version")
+//    "intTestImplementation"("org.jetbrains.kotlin:kotlin-test-junit5:$kotlinVersion")
 }
 
 fun DependencyHandlerScope.mockk() {
     val mockkVersion = "1.12.0"
 
     "testImplementation"("io.mockk:mockk:$mockkVersion")
-    "intTestImplementation"("io.mockk:mockk:$mockkVersion")
+//    "intTestImplementation"("io.mockk:mockk:$mockkVersion")
 }

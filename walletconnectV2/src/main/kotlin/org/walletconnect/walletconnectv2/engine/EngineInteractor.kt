@@ -1,19 +1,27 @@
 package org.walletconnect.walletconnectv2.engine
 
+import android.util.Log
+import com.squareup.moshi.Moshi
+import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.tinder.scarlet.Stream
 import com.tinder.scarlet.WebSocket
+import com.tinder.scarlet.utils.getRawType
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
+import kotlinx.coroutines.flow.onEach
 import org.json.JSONObject
 import org.walletconnect.walletconnectv2.clientcomm.pairing.SettledPairingSequence
 import org.walletconnect.walletconnectv2.clientcomm.session.SettledSessionSequence
 import org.walletconnect.walletconnectv2.clientcomm.PreSettlementSession
+import org.walletconnect.walletconnectv2.clientcomm.pairing.PairingPayload
 import org.walletconnect.walletconnectv2.clientcomm.pairing.proposal.PairingProposedPermissions
 import org.walletconnect.walletconnectv2.clientcomm.session.RelayProtocolOptions
 import org.walletconnect.walletconnectv2.clientcomm.session.Session
 import org.walletconnect.walletconnectv2.clientcomm.session.proposal.SessionProposedPermissions
 import org.walletconnect.walletconnectv2.clientcomm.session.success.SessionState
-import org.walletconnect.walletconnectv2.common.Expiry
-import org.walletconnect.walletconnectv2.common.Topic
+import org.walletconnect.walletconnectv2.common.*
+import org.walletconnect.walletconnectv2.common.network.adapters.*
 import org.walletconnect.walletconnectv2.common.toApprove
 import org.walletconnect.walletconnectv2.common.toPairProposal
 import org.walletconnect.walletconnectv2.crypto.CryptoManager
@@ -26,7 +34,7 @@ import org.walletconnect.walletconnectv2.relay.WakuRelayRepository
 import org.walletconnect.walletconnectv2.util.*
 import java.util.*
 
-class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0) {
+class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0, scope: CoroutineScope) {
     //region provide with DI
     // TODO: add logic to check hostName for ws/wss scheme with and without ://
     private val relayRepository: WakuRelayRepository =
@@ -45,25 +53,40 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
 
     private val crypto: CryptoManager = LazySodiumCryptoManager(keyChain)
     private val codec: AuthenticatedEncryptionCodec = AuthenticatedEncryptionCodec()
+    private val moshi: Moshi = Moshi.Builder()
+        .addLast { type, _, _ ->
+            when (type.getRawType().name) {
+                Expiry::class.qualifiedName -> ExpiryAdapter
+                JSONObject::class.qualifiedName -> JSONObjectAdapter
+                SubscriptionId::class.qualifiedName -> SubscriptionIdAdapter
+                Topic::class.qualifiedName -> TopicAdapter
+                Ttl::class.qualifiedName -> TtlAdapter
+                else -> null
+            }
+        }
+        .addLast(KotlinJsonAdapterFactory())
+        .build()
     //endregion
 
     internal val publishAcknowledgement = relayRepository.publishAcknowledgement
     internal val subscribeAcknowledgement = relayRepository.subscribeAcknowledgement
-
     internal val subscriptionRequest = relayRepository.subscriptionRequest //session proposal
-//    internal val sessionProposal = subscriptionRequest.map {
-//        codec.decrypt(it.params.subscriptionData.message.toEncryptionPayload(), crypto.getSharedKey(""))
-//    }
+    internal val sessionProposal = subscriptionRequest.map {
+        val pairingPayloadJson = codec.decrypt(it.params.subscriptionData.message.toEncryptionPayload(), crypto.getSharedKey(pairingPublicKey, peerPublicKey))
+        val pairingPayload = moshi.adapter(PairingPayload::class.java).fromJson(pairingPayloadJson)!!
+        pairingPayload.params.request.params.also { Log.e("Talha", "Proposal: $it") }
+    }
 
     private var pairingPublicKey = PublicKey("")
+    private var peerPublicKey = PublicKey("")
 
     fun pair(uri: String) {
         val pairingProposal = uri.toPairProposal()
-        val selfPublicKey = crypto.generateKeyPair()
+        val selfPublicKey = crypto.generateKeyPair().also { pairingPublicKey = it }
         val expiry =
             Expiry((Calendar.getInstance().timeInMillis / 1000) + pairingProposal.ttl.seconds)
 
-        val peerPublicKey = PublicKey(pairingProposal.pairingProposer.publicKey)
+        val peerPublicKey = PublicKey(pairingProposal.pairingProposer.publicKey).also { peerPublicKey = it }
         val controllerPublicKey = if (pairingProposal.pairingProposer.controller) {
             peerPublicKey
         } else {
@@ -86,8 +109,6 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
                 selfPublicKey
             )
 
-        println("wc_pairingApprove: ${preSettlementPairingApprove}")
-
         relayRepository.eventsStream.start(object : Stream.Observer<WebSocket.Event> {
             override fun onComplete() {
                 println("completed")
@@ -98,8 +119,6 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0)
             }
 
             override fun onNext(data: WebSocket.Event) {
-                println("\n\n$data")
-
                 if (data is WebSocket.Event.OnConnectionOpened<*>) {
                     println("Subscribe on TOPIC: ${settledSequence.settledTopic}")
                     relayRepository.subscribe(settledSequence.settledTopic)
