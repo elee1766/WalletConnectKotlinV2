@@ -1,23 +1,23 @@
 package org.walletconnect.example.wallet
 
-import android.app.Application
-import androidx.lifecycle.*
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.asLiveData
+import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.launch
 import org.walletconnect.example.R
 import org.walletconnect.example.wallet.ui.*
+import org.walletconnect.walletconnectv2.WalletConnectClient
+import org.walletconnect.walletconnectv2.client.ClientTypes
 
-class WalletViewModel(application: Application) : AndroidViewModel(application) {
+class WalletViewModel : ViewModel() {
 
     init {
-//        Initialize SDK with proper parameters
-//        val initParams = ClientTypes.InitialParams(
-//            useTls = true,
-//            hostName = "relay.walletconnect.com",
-//            apiKey = "",
-//            isController = true
-//        )
-//        WalletConnectClient.initialize(initParams)
+        val initParams = ClientTypes.InitialParams(useTls = true, hostName = "relay.walletconnect.org", apiKey = "", isController = true)
+        WalletConnectClient.initialize(initParams)
+
+        val pairingParams = ClientTypes.PairParams(uri = "wc:49ea28913d569e5dd9dde2559864b4f701de8504b1be087a255423a98a24a7a8@2?controller=false&publicKey=f716ebfa11655566bb53c64d9d73321515cb3da4f3a4b2f8eb3ecbf5d35cc715&relay=%7B%22protocol%22%3A%22waku%22%7D")
+        WalletConnectClient.pair(pairingParams)
     }
 
     private var _eventFlow = MutableSharedFlow<WalletUiEvent>()
@@ -30,8 +30,8 @@ class WalletViewModel(application: Application) : AndroidViewModel(application) 
 //        val sessionProposalListener = WalletConnectClientListeners.Session { sessionProposal ->
 //
 //        }
-//        val pairingParams = ClientTypes.PairParams(uri = uri)
-//         WalletConnectClient.pair(pairingParams, sessionProposalListener)
+        val pairingParams = ClientTypes.PairParams(uri = uri)
+         WalletConnectClient.pair(pairingParams)
 
 
         //mocked session proposal

@@ -16,7 +16,6 @@ import org.walletconnect.walletconnectv2.util.Utils.bytesToHex
 import org.walletconnect.walletconnectv2.util.Utils.hexToBytes
 import java.nio.charset.StandardCharsets
 import java.security.MessageDigest
-import java.util.*
 
 class LazySodiumCryptoManager(private val keyChain: KeyChain) : CryptoManager {
     private val lazySodium =

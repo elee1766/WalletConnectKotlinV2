@@ -29,7 +29,12 @@ class WalletFragment : Fragment(R.layout.wallet_fragment) {
         viewModel.eventFlow.observe(viewLifecycleOwner, { event ->
             when (event) {
                 is ShowSessionProposalDialog -> {
-                    SessionProposalDialog(requireContext(), { viewModel.approve() }, { viewModel.reject() }, event.proposal).run {
+                    SessionProposalDialog(
+                        requireContext(),
+                        { viewModel.approve() },
+                        { viewModel.reject() },
+                        event.proposal
+                    ).run {
                         show()
                     }
                 }
@@ -45,6 +50,9 @@ class WalletFragment : Fragment(R.layout.wallet_fragment) {
         binding.walletToolbar.setOnMenuItemClickListener { item ->
             if (item.itemId == R.id.qrCodeScanner) {
                 findNavController().navigate(R.id.action_walletFragment_to_scannerFragment)
+                true
+            } else if (item.itemId == R.id.pasteUri) {
+                UrlDialog(requireContext(), approve = { url -> viewModel.pair(url) }).run { show() }
                 true
             } else {
                 false

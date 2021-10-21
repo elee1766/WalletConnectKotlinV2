@@ -5,7 +5,6 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.launch
 import org.walletconnect.walletconnectv2.client.ClientTypes
-import org.walletconnect.walletconnectv2.client.WalletConnectClientListeners
 import org.walletconnect.walletconnectv2.clientcomm.session.Session
 import org.walletconnect.walletconnectv2.engine.EngineInteractor
 
@@ -16,16 +15,18 @@ object WalletConnectClient {
 
     fun initialize(initialParams: ClientTypes.InitialParams) {
         // TODO: pass properties to DI framework
-        engineInteractor = EngineInteractor(hostName = initialParams.hostName)
+        engineInteractor =
+            EngineInteractor(hostName = initialParams.hostName, useTLs = initialParams.useTls)
     }
 
     fun pair(
-        pairingParams: ClientTypes.PairParams,
-        clientListeners: WalletConnectClientListeners.Pairing
+        pairingParams: ClientTypes.PairParams
     ) {
         require(this::engineInteractor.isInitialized) {
             "Initialize must be called prior to pairing"
         }
+
+        println("KOBE PAIRING: ${pairingParams.uri}")
 
         scope.launch {
             engineInteractor.pair(pairingParams.uri)
@@ -33,6 +34,6 @@ object WalletConnectClient {
     }
 
     fun approve(proposal: Session.Proposal) {
-       engineInteractor.approve(proposal)
+//       engineInteractor.approve(proposal)
     }
 }

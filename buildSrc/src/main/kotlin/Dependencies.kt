@@ -39,6 +39,9 @@ fun DependencyHandlerScope.scarlet() {
     "implementation"("com.tinder.scarlet:websocket-okhttp:$scarletVersion")
     "implementation"("com.tinder.scarlet:stream-adapter-coroutines:$scarletVersion")
     "implementation"("com.tinder.scarlet:message-adapter-moshi:$scarletVersion")
+    "implementation"(platform("com.squareup.okhttp3:okhttp-bom:4.9.0"))
+    "implementation"("com.squareup.okhttp3:okhttp")
+    "implementation"("com.squareup.okhttp3:logging-interceptor")
 
     "testImplementation"("com.tinder.scarlet:websocket-mockwebserver:$scarletVersion")
     "testImplementation"("com.tinder.scarlet:test-utils:$scarletVersion")

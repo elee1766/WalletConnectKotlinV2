@@ -8,6 +8,7 @@ import com.tinder.scarlet.retry.LinearBackoffStrategy
 import com.tinder.scarlet.utils.getRawType
 import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import org.json.JSONObject
 import org.walletconnect.walletconnectv2.clientcomm.PreSettlementPairing
 import org.walletconnect.walletconnectv2.clientcomm.PreSettlementSession
@@ -23,12 +24,18 @@ import java.util.concurrent.TimeUnit
 class WakuRelayRepository internal constructor(private val useTLs: Boolean, private val hostName: String, private val port: Int) {
     //region Move to DI module
     private val okHttpClient = OkHttpClient.Builder()
+        .addInterceptor((HttpLoggingInterceptor())
+            .apply {
+                level = HttpLoggingInterceptor.Level.BODY
+                level = HttpLoggingInterceptor.Level.HEADERS
+            })
         .writeTimeout(TIMEOUT_TIME, TimeUnit.MILLISECONDS)
         .readTimeout(TIMEOUT_TIME, TimeUnit.MILLISECONDS)
         .callTimeout(TIMEOUT_TIME, TimeUnit.MILLISECONDS)
         .connectTimeout(TIMEOUT_TIME, TimeUnit.MILLISECONDS)
         .pingInterval(2, TimeUnit.SECONDS)
         .build()
+
     private val moshi: Moshi = Moshi.Builder()
         .addLast { type, _, _ ->
             when (type.getRawType().name) {
@@ -43,14 +50,15 @@ class WakuRelayRepository internal constructor(private val useTLs: Boolean, priv
         .addLast(KotlinJsonAdapterFactory())
         .build()
     private val scarlet by lazy {
+        println("KOBE URL: ${getServerUrl().trim()}")
         Scarlet.Builder()
             .backoffStrategy(LinearBackoffStrategy(TimeUnit.MINUTES.toMillis(DEFAULT_BACKOFF_MINUTES)))
-            .webSocketFactory(okHttpClient.newWebSocketFactory(getServerUrl()))
+            .webSocketFactory(okHttpClient.newWebSocketFactory("wss://relay.walletconnect.org"))//getServerUrl().trim()))
             .addMessageAdapterFactory(MoshiMessageAdapter.Factory(moshi))
             .addStreamAdapterFactory(FlowStreamAdapter.Factory())
             .build()
     }
-    private val relay: RelayService by lazy { scarlet.create() }
+    private val relay: RelayService by lazy { scarlet.create(RelayService::class.java) }
     //endregion
 
     internal val eventsStream = relay.observeEvents()
