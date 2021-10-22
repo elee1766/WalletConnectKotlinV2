@@ -13,7 +13,7 @@ import org.walletconnect.walletconnectv2.common.network.adapters.TopicAdapter
 import org.walletconnect.walletconnectv2.common.network.adapters.TtlAdapter
 import org.walletconnect.walletconnectv2.crypto.data.EncryptionPayload
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
-import org.walletconnect.walletconnectv2.util.Utils.bytesToHex
+import org.walletconnect.walletconnectv2.util.bytesToHex
 import kotlin.test.assertEquals
 
 class AuthenticatedEncryptionCodecTest {

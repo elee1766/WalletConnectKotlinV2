@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    compileSdk = 31
+    compileSdk = 30
 
     defaultConfig {
         applicationId = "org.walletconnect.sdk"
-        minSdk = 23
+        minSdk = 21
         targetSdk = 30
         versionCode = 1
         versionName = "1.0"
@@ -23,18 +23,15 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = jvmVersion
+        targetCompatibility = jvmVersion
     }
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = jvmVersion.toString()
     }
 }
 

@@ -1,25 +1,23 @@
 package org.walletconnect.walletconnectv2.crypto.managers
 
 
-import com.goterl.lazysodium.LazySodiumJava
-import com.goterl.lazysodium.SodiumJava
+import com.goterl.lazysodium.LazySodiumAndroid
+import com.goterl.lazysodium.SodiumAndroid
 import com.goterl.lazysodium.utils.HexMessageEncoder
 import com.goterl.lazysodium.utils.Key
-import com.goterl.lazysodium.utils.LibraryLoader
 import org.walletconnect.walletconnectv2.common.Topic
-import org.walletconnect.walletconnectv2.crypto.data.Key as WCKey
 import org.walletconnect.walletconnectv2.crypto.CryptoManager
 import org.walletconnect.walletconnectv2.crypto.KeyChain
 import org.walletconnect.walletconnectv2.crypto.data.PrivateKey
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
-import org.walletconnect.walletconnectv2.util.Utils.bytesToHex
-import org.walletconnect.walletconnectv2.util.Utils.hexToBytes
-import java.nio.charset.StandardCharsets
+import org.walletconnect.walletconnectv2.util.bytesToHex
+import org.walletconnect.walletconnectv2.util.hexToBytes
 import java.security.MessageDigest
+import org.walletconnect.walletconnectv2.crypto.data.Key as WCKey
 
 class LazySodiumCryptoManager(private val keyChain: KeyChain) : CryptoManager {
-    private val lazySodium =
-        LazySodiumJava(SodiumJava(LibraryLoader.Mode.PREFER_BUNDLED), StandardCharsets.UTF_8)
+    private val lazySodium = LazySodiumAndroid(SodiumAndroid())
+//        LazySodiumJava(SodiumJava(LibraryLoader.Mode.BUNDLED_ONLY), StandardCharsets.UTF_8)
 
     override fun hasKeys(tag: String): Boolean {
         return keyChain.getKey(tag).isNotBlank()
@@ -49,7 +47,15 @@ class LazySodiumCryptoManager(private val keyChain: KeyChain) : CryptoManager {
         return setEncryptionKeys(sharedKey.asHexString.lowercase(), publicKey, overrideTopic)
     }
 
-    override fun getShared(self: PrivateKey, peer: PublicKey): String {
+    override fun getSharedKey(self: PublicKey, peer: PublicKey): String {
+        val (_, selfPrivateKey) = getKeyPair(self)
+
+        return lazySodium.cryptoScalarMult(selfPrivateKey.toKey(), peer.toKey()).asHexString.also {
+            println("SelfPublic: ${self.keyAsHex}\nSelfPrivate: ${selfPrivateKey.keyAsHex}\nPeerKey: ${peer.keyAsHex}\nSharedKey: $it")
+        }
+    }
+
+    internal fun getSharedKeyUsingPrivate(self: PrivateKey, peer: PublicKey): String {
         return lazySodium.cryptoScalarMult(self.toKey(), peer.toKey()).asHexString
     }
 
