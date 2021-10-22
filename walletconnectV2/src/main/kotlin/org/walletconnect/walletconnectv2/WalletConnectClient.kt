@@ -1,8 +1,11 @@
 package org.walletconnect.walletconnectv2
 
+import android.util.Log
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.launch
 import org.walletconnect.walletconnectv2.client.ClientTypes
 import org.walletconnect.walletconnectv2.client.SessionProposal
@@ -13,34 +16,35 @@ import java.net.URI
 
 object WalletConnectClient {
     private val job = SupervisorJob()
-    private val scope = CoroutineScope(job + Dispatchers.IO)
-    private lateinit var engineInteractor: EngineInteractor
-    val publishAcknowledgement by lazy { engineInteractor.publishAcknowledgement }
-    val subscribeAcknowledgement by lazy { engineInteractor.subscribeAcknowledgement }
-    val sessionProposalFlow by lazy { engineInteractor.sessionProposal }
-    val subscriptionRequest by lazy { engineInteractor.subscriptionRequest }
+    internal val scope = CoroutineScope(job + Dispatchers.IO)
+    private val engineInteractor = EngineInteractor()
 
     // Listeners
-    internal var pairingListener: WalletConnectClientListeners.Pairing? = null
+    private var pairingListener: WalletConnectClientListeners.Pairing? = null
+
+    init {
+        scope.launch {
+            engineInteractor.sessionProposal.collect {
+                Log.e("TalhaWalletClient", "$it")
+                it?.toSessionProposal()?.let { sessionProposal ->
+                    pairingListener?.onSessionProposal(sessionProposal)
+                }
+            }
+        }
+    }
 
     fun initialize(initialParams: ClientTypes.InitialParams) {
         // TODO: pass properties to DI framework
-        engineInteractor = EngineInteractor(hostName = initialParams.hostName, scope = scope)
+        val engineFactory = EngineInteractor.EngineFactory(useTLs = initialParams.useTls, hostName = initialParams.hostName)
+        engineInteractor.initialize(engineFactory)
     }
 
-    fun pair(
-        pairingParams: ClientTypes.PairParams,
-        clientListeners: WalletConnectClientListeners.Pairing
-    ) {
-        require(this::engineInteractor.isInitialized) {
-            "Initialize must be called prior to pairing"
-        }
-
+    fun pair(pairingParams: ClientTypes.PairParams, clientListeners: WalletConnectClientListeners.Pairing) {
         pairingListener = clientListeners
 
-        engineInteractor.pair(pairingParams.uri)
-
         scope.launch {
+//            engineInteractor.pair("wc:c5885ce5596212bb58e9efc3f3e4aaa68df8d2016482f456823fdcb16bb06adf@2?controller=false&publicKey=84d4287be804381c9ac34713d93bb68123c913d7bca6a489d61e9a0d849c276b&relay=%7B%22protocol%22%3A%22waku%22%7D"/*pairingParams.uri*/)
+            engineInteractor.pair(pairingParams.uri)
         }
     }
 

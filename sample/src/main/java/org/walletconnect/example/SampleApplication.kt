@@ -10,12 +10,7 @@ class SampleApplication: Application() {
     override fun onCreate() {
         super.onCreate()
 
-        val initParams = ClientTypes.InitialParams(
-            useTls = true,
-            hostName = "relay.walletconnect.org",
-            apiKey = "",
-            isController = true
-        )
+        val initParams = ClientTypes.InitialParams(true, "relay.walletconnect.org", "", true)
         WalletConnectClient.initialize(initParams)
     }
 }

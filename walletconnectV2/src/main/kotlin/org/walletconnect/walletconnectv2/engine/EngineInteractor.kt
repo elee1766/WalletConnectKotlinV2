@@ -6,24 +6,23 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.tinder.scarlet.Stream
 import com.tinder.scarlet.WebSocket
 import com.tinder.scarlet.utils.getRawType
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.flow.launchIn
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.launch
 import org.json.JSONObject
-import org.walletconnect.walletconnectv2.clientcomm.pairing.SettledPairingSequence
-import org.walletconnect.walletconnectv2.clientcomm.session.SettledSessionSequence
+import org.walletconnect.walletconnectv2.WalletConnectClient
 import org.walletconnect.walletconnectv2.clientcomm.PreSettlementSession
 import org.walletconnect.walletconnectv2.clientcomm.pairing.PairingPayload
+import org.walletconnect.walletconnectv2.clientcomm.pairing.SettledPairingSequence
 import org.walletconnect.walletconnectv2.clientcomm.pairing.proposal.PairingProposedPermissions
 import org.walletconnect.walletconnectv2.clientcomm.session.RelayProtocolOptions
 import org.walletconnect.walletconnectv2.clientcomm.session.Session
+import org.walletconnect.walletconnectv2.clientcomm.session.SettledSessionSequence
 import org.walletconnect.walletconnectv2.clientcomm.session.proposal.SessionProposedPermissions
 import org.walletconnect.walletconnectv2.clientcomm.session.success.SessionState
 import org.walletconnect.walletconnectv2.common.*
 import org.walletconnect.walletconnectv2.common.network.adapters.*
-import org.walletconnect.walletconnectv2.common.toApprove
-import org.walletconnect.walletconnectv2.common.toPairProposal
 import org.walletconnect.walletconnectv2.crypto.CryptoManager
 import org.walletconnect.walletconnectv2.crypto.KeyChain
 import org.walletconnect.walletconnectv2.crypto.codec.AuthenticatedEncryptionCodec
@@ -31,14 +30,13 @@ import org.walletconnect.walletconnectv2.crypto.data.EncryptionPayload
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
 import org.walletconnect.walletconnectv2.crypto.managers.LazySodiumCryptoManager
 import org.walletconnect.walletconnectv2.relay.WakuRelayRepository
-import org.walletconnect.walletconnectv2.util.*
+import org.walletconnect.walletconnectv2.util.generateId
 import java.util.*
 
-class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0, scope: CoroutineScope) {
+class EngineInteractor {
     //region provide with DI
     // TODO: add logic to check hostName for ws/wss scheme with and without ://
-    private val relayRepository: WakuRelayRepository =
-        WakuRelayRepository.initRemote(useTLs = useTLs, hostName = hostName, port = port)
+    private lateinit var relayRepository: WakuRelayRepository
     private val keyChain = object : KeyChain {
         val mapOfKeys = mutableMapOf<String, String>()
 
@@ -50,7 +48,6 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0,
             return mapOfKeys[key]!!
         }
     }
-
     private val crypto: CryptoManager = LazySodiumCryptoManager(keyChain)
     private val codec: AuthenticatedEncryptionCodec = AuthenticatedEncryptionCodec()
     private val moshi: Moshi = Moshi.Builder()
@@ -68,24 +65,31 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0,
         .build()
     //endregion
 
-    internal val publishAcknowledgement = relayRepository.publishAcknowledgement
-    internal val subscribeAcknowledgement = relayRepository.subscribeAcknowledgement
-    internal val subscriptionRequest = relayRepository.subscriptionRequest //session proposal
-    internal val sessionProposal = subscriptionRequest.map {
-        val pairingPayloadJson = codec.decrypt(it.params.subscriptionData.message.toEncryptionPayload(), crypto.getSharedKey(pairingPublicKey, peerPublicKey))
-        val pairingPayload = moshi.adapter(PairingPayload::class.java).fromJson(pairingPayloadJson)!!
-        pairingPayload.params.request.params.also { Log.e("Talha", "Proposal: $it") }
-    }
+    private val _sessionProposal: MutableStateFlow<Session.Proposal?> = MutableStateFlow(null)
+    val sessionProposal: StateFlow<Session.Proposal?> = _sessionProposal
 
     private var pairingPublicKey = PublicKey("")
     private var peerPublicKey = PublicKey("")
 
+    fun initialize(engineFactory: EngineFactory) {
+        relayRepository = WakuRelayRepository.initRemote(engineFactory.useTLs, engineFactory.hostName, engineFactory.port)
+
+        WalletConnectClient.scope.launch {
+            relayRepository.subscriptionRequest.collect {
+                val pairingPayloadJson = codec.decrypt(it.params.subscriptionData.message.toEncryptionPayload(), crypto.getSharedKey(pairingPublicKey, peerPublicKey))
+                val pairingPayload = moshi.adapter(PairingPayload::class.java).fromJson(pairingPayloadJson)
+                val sessionProposal = pairingPayload?.params?.request?.params.also { session -> Log.e("TalhaEngine", session.toString()) } // Log if null
+                _sessionProposal.value = sessionProposal
+            }
+        }
+    }
+
     fun pair(uri: String) {
+        require(::relayRepository.isInitialized)
+
         val pairingProposal = uri.toPairProposal()
         val selfPublicKey = crypto.generateKeyPair().also { pairingPublicKey = it }
-        val expiry =
-            Expiry((Calendar.getInstance().timeInMillis / 1000) + pairingProposal.ttl.seconds)
-
+        val expiry = Expiry((Calendar.getInstance().timeInMillis / 1000) + pairingProposal.ttl.seconds)
         val peerPublicKey = PublicKey(pairingProposal.pairingProposer.publicKey).also { peerPublicKey = it }
         val controllerPublicKey = if (pairingProposal.pairingProposer.controller) {
             peerPublicKey
@@ -110,17 +114,12 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0,
             )
 
         relayRepository.eventsStream.start(object : Stream.Observer<WebSocket.Event> {
-            override fun onComplete() {
-                println("completed")
-            }
+            override fun onComplete() {}
 
-            override fun onError(throwable: Throwable) {
-                println("throwable: ${throwable.stackTraceToString()}")
-            }
+            override fun onError(throwable: Throwable) {}
 
             override fun onNext(data: WebSocket.Event) {
                 if (data is WebSocket.Event.OnConnectionOpened<*>) {
-                    println("Subscribe on TOPIC: ${settledSequence.settledTopic}")
                     relayRepository.subscribe(settledSequence.settledTopic)
                     relayRepository.publishPairingApproval(
                         pairingProposal.topic,
@@ -139,7 +138,10 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0,
         controllerPublicKey: PublicKey,
         expiry: Expiry
     ): SettledPairingSequence {
+        require(::relayRepository.isInitialized)
+
         val settledTopic: Topic = crypto.generateSharedKey(selfPublicKey, peerPublicKey)
+
         return SettledPairingSequence(
             settledTopic,
             relay,
@@ -151,14 +153,14 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0,
     }
 
     fun approve(proposal: Session.Proposal) {
+        require(::relayRepository.isInitialized)
+
         println("Kobe Session Proposal: $proposal\n")
 
         val selfPublicKey: PublicKey = crypto.generateKeyPair()
         val peerPublicKey = PublicKey(proposal.proposer.publicKey)
-        val sessionState =
-            SessionState(listOf("eip155:137:0x022c0c42a80bd19EA4cF0F94c4F9F96645759716")) //pass proper keys from wallet
-        val expiry =
-            Expiry((Calendar.getInstance().timeInMillis / 1000) + proposal.ttl.seconds)
+        val sessionState = SessionState(listOf("eip155:137:0x022c0c42a80bd19EA4cF0F94c4F9F96645759716")) //pass proper keys from wallet
+        val expiry = Expiry((Calendar.getInstance().timeInMillis / 1000) + proposal.ttl.seconds)
 
         val settledSession: SettledSessionSequence = settleSessionSequence(
             proposal.relay,
@@ -191,11 +193,9 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0,
             // should be pairingPublicKey
         )
 
-        val encryptedString =
-            encryptedJson.iv + encryptedJson.publicKey + encryptedJson.mac + encryptedJson.cipherText
+        val encryptedString = encryptedJson.iv + encryptedJson.publicKey + encryptedJson.mac + encryptedJson.cipherText
 
         println("Kobe Session Approval Encryped Json: $encryptedJson\n\n")
-
 
         relayRepository.eventsStream.start(object : Stream.Observer<WebSocket.Event> {
             override fun onComplete() {}
@@ -222,6 +222,7 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0,
         sessionState: SessionState
     ): SettledSessionSequence {
         val settledTopic: Topic = crypto.generateSharedKey(selfPublicKey, peerPublicKey)
+
         return SettledSessionSequence(
             settledTopic,
             relay,
@@ -245,4 +246,6 @@ class EngineInteractor(useTLs: Boolean = false, hostName: String, port: Int = 0,
 
         return EncryptionPayload(iv, publicKey, mac, cipherText)
     }
+
+    data class EngineFactory(val useTLs: Boolean = false, val hostName: String, val port: Int = 0)
 }

@@ -1,6 +1,8 @@
+import org.gradle.api.JavaVersion
 import org.gradle.kotlin.dsl.DependencyHandlerScope
 
 const val kotlinVersion = "1.5.31"
+val jvmVersion = JavaVersion.VERSION_11
 
 fun DependencyHandlerScope.scanner() {
     val mlKitBarcode = "16.0.1"
@@ -39,6 +41,7 @@ fun DependencyHandlerScope.scarlet() {
     "implementation"("com.tinder.scarlet:websocket-okhttp:$scarletVersion")
     "implementation"("com.tinder.scarlet:stream-adapter-coroutines:$scarletVersion")
     "implementation"("com.tinder.scarlet:message-adapter-moshi:$scarletVersion")
+    "implementation"("com.tinder.scarlet:lifecycle-android:$scarletVersion")
 
     "testImplementation"("com.tinder.scarlet:websocket-mockwebserver:$scarletVersion")
     "testImplementation"("com.tinder.scarlet:test-utils:$scarletVersion")
@@ -56,6 +59,14 @@ fun DependencyHandlerScope.moshi() {
 fun DependencyHandlerScope.json() {
     val jsonVersion = "20210307"
     "implementation"("org.json:json:$jsonVersion")
+}
+
+fun DependencyHandlerScope.okhttp() {
+    val okhttpVersion = "4.9.0"
+
+    "implementation"(platform("com.squareup.okhttp3:okhttp-bom:$okhttpVersion"))
+    "implementation"("com.squareup.okhttp3:okhttp")
+    "implementation"("com.squareup.okhttp3:logging-interceptor")
 }
 
 fun DependencyHandlerScope.lazySodium() {

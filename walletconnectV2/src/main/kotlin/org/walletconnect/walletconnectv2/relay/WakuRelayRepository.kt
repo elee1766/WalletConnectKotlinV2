@@ -8,6 +8,7 @@ import com.tinder.scarlet.retry.LinearBackoffStrategy
 import com.tinder.scarlet.utils.getRawType
 import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import org.json.JSONObject
 import org.walletconnect.walletconnectv2.clientcomm.PreSettlementPairing
 import org.walletconnect.walletconnectv2.clientcomm.PreSettlementSession
@@ -16,13 +17,14 @@ import org.walletconnect.walletconnectv2.common.network.adapters.*
 import org.walletconnect.walletconnectv2.crypto.data.EncryptionPayload
 import org.walletconnect.walletconnectv2.relay.data.RelayService
 import org.walletconnect.walletconnectv2.relay.data.model.Relay
-import org.walletconnect.walletconnectv2.util.*
 import org.walletconnect.walletconnectv2.util.adapters.FlowStreamAdapter
+import org.walletconnect.walletconnectv2.util.generateId
 import java.util.concurrent.TimeUnit
 
 class WakuRelayRepository internal constructor(private val useTLs: Boolean, private val hostName: String, private val port: Int) {
     //region Move to DI module
     private val okHttpClient = OkHttpClient.Builder()
+        .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
         .writeTimeout(TIMEOUT_TIME, TimeUnit.MILLISECONDS)
         .readTimeout(TIMEOUT_TIME, TimeUnit.MILLISECONDS)
         .callTimeout(TIMEOUT_TIME, TimeUnit.MILLISECONDS)
@@ -56,19 +58,14 @@ class WakuRelayRepository internal constructor(private val useTLs: Boolean, priv
     internal val eventsStream = relay.observeEvents()
     internal val publishAcknowledgement = relay.observePublishAcknowledgement()
     internal val subscribeAcknowledgement = relay.observeSubscribeAcknowledgement()
-    internal val subscriptionRequest = relay.observeSubscriptionRequest()
-    val unsubscribeAcknowledgement = relay.observeUnsubscribeAcknowledgement()
+    internal val subscriptionRequest = relay.observeSubscriptionRequest()//.stateIn(WalletConnectClient.scope, SharingStarted.Lazily, null)
+    internal val unsubscribeAcknowledgement = relay.observeUnsubscribeAcknowledgement()
 
     fun publishPairingApproval(
         topic: Topic,
         preSettlementPairingApproval: PreSettlementPairing.Approve
     ) {
         val publishRequest = preSettlementPairingApproval.toRelayPublishRequest(generateId(), topic, moshi)
-        println(
-            "Publish Request ${
-                moshi.adapter(Relay.Publish.Request::class.java).toJson(publishRequest)
-            }"
-        )
         relay.publishRequest(publishRequest)
     }
 
@@ -123,4 +120,3 @@ class WakuRelayRepository internal constructor(private val useTLs: Boolean, priv
             WakuRelayRepository(useTLs, hostName, port)
     }
 }
-

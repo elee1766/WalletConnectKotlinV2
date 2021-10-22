@@ -20,17 +20,13 @@ plugins {
 //}
 
 android {
-    compileSdk = 31
+    compileSdk = 30
 
     defaultConfig {
-        minSdk = 23
-        targetSdk = 31
+        minSdk = 21
+        targetSdk = 30
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
-    }
-
-    buildFeatures {
-        viewBinding = true
     }
 
     buildTypes {
@@ -43,11 +39,11 @@ android {
         }
     }
     compileOptions {
-        sourceCompatibility = JavaVersion.VERSION_11
-        targetCompatibility = JavaVersion.VERSION_11
+        sourceCompatibility = jvmVersion
+        targetCompatibility = jvmVersion
     }
     kotlinOptions {
-        jvmTarget = JavaVersion.VERSION_11.toString()
+        jvmTarget = jvmVersion.toString()
     }
 //    testOptions {
 //        unitTests.all {
@@ -59,9 +55,9 @@ android {
 kotlin {
     tasks.withType<KotlinCompile>() {
         kotlinOptions {
-            sourceCompatibility = JavaVersion.VERSION_11.toString()
-            targetCompatibility = JavaVersion.VERSION_11.toString()
-            jvmTarget = JavaVersion.VERSION_11.toString()
+            sourceCompatibility = jvmVersion.toString()
+            targetCompatibility = jvmVersion.toString()
+            jvmTarget = jvmVersion.toString()
             freeCompilerArgs = freeCompilerArgs + "-Xopt-in=kotlin.time.ExperimentalTime"
         }
     }
@@ -100,17 +96,11 @@ kotlin {
 ////endregion
 
 dependencies {
-//    implementation(fileTree(include = listOf("*.jar", "*.aar"), org.gradle.internal.impldep.bsh.commands.dir: 'libs'))
-    //todo extract to Dependencies
-//    "implementation"( "org.whispersystems:curve25519-android:0.5.0")
-//    implementation(files("libs/lazysodium-android-5.0.2.aar"))
-//    implementation("com.goterl.lazycode:lazysodium-android:4.1.1@aar")
-
+    okhttp()
     lazySodium()
     coroutines()
     moshi()
     scarlet()
-    json()
 
     jUnit5()
     mockk()

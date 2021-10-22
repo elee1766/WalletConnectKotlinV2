@@ -2,13 +2,6 @@ package integration
 
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.collect
-import org.walletconnect.walletconnectv2.clientcomm.session.RelayProtocolOptions
-import org.walletconnect.walletconnectv2.clientcomm.session.Session
-import org.walletconnect.walletconnectv2.clientcomm.session.proposal.SessionProposedPermissions
-import org.walletconnect.walletconnectv2.clientcomm.session.proposal.SessionProposer
-import org.walletconnect.walletconnectv2.clientcomm.session.proposal.SessionSignal
-import org.walletconnect.walletconnectv2.common.Topic
-import org.walletconnect.walletconnectv2.common.Ttl
 import org.walletconnect.walletconnectv2.engine.EngineInteractor
 import java.time.Duration
 import kotlin.system.exitProcess
@@ -21,7 +14,7 @@ fun main() {
 private fun pairTest() {
     val job = SupervisorJob()
     val scope = CoroutineScope(job + Dispatchers.IO)
-    val engine = EngineInteractor(true, "relay.walletconnect.org", scope = scope)
+    val engine = EngineInteractor(true, "relay.walletconnect.org")
     val uri =
         "wc:5e92f91290c5cf408fd099c7ae5d74bb3743d41ae4313c650611e3ea07e2af3f@2?controller=false&publicKey=36e3df2b8dffad98b2bce12eacbd6d37015bc436ed21dad18b72d9e3d2232c2b&relay=%7B%22protocol%22%3A%22waku%22%7D"
     scope.launch {

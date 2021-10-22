@@ -3,14 +3,14 @@ package org.walletconnect.example.wallet
 import android.os.Bundle
 import android.view.View
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.viewModels
+import androidx.fragment.app.activityViewModels
 import androidx.navigation.fragment.findNavController
 import org.walletconnect.example.R
 import org.walletconnect.example.databinding.WalletFragmentBinding
 import org.walletconnect.example.wallet.ui.*
 
 class WalletFragment : Fragment(R.layout.wallet_fragment) {
-    private val viewModel: WalletViewModel by viewModels()
+    private val viewModel: WalletViewModel by activityViewModels()
     private lateinit var binding: WalletFragmentBinding
     private val sessionAdapter = SessionsAdapter()
 
