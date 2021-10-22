@@ -15,9 +15,6 @@ class WalletViewModel : ViewModel() {
     init {
         val initParams = ClientTypes.InitialParams(useTls = true, hostName = "relay.walletconnect.org", apiKey = "", isController = true)
         WalletConnectClient.initialize(initParams)
-
-        val pairingParams = ClientTypes.PairParams(uri = "wc:49ea28913d569e5dd9dde2559864b4f701de8504b1be087a255423a98a24a7a8@2?controller=false&publicKey=f716ebfa11655566bb53c64d9d73321515cb3da4f3a4b2f8eb3ecbf5d35cc715&relay=%7B%22protocol%22%3A%22waku%22%7D")
-        WalletConnectClient.pair(pairingParams)
     }
 
     private var _eventFlow = MutableSharedFlow<WalletUiEvent>()

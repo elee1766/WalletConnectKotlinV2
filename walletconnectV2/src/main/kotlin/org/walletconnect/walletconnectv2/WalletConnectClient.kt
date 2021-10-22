@@ -16,12 +16,11 @@ object WalletConnectClient {
     fun initialize(initialParams: ClientTypes.InitialParams) {
         // TODO: pass properties to DI framework
         engineInteractor =
-            EngineInteractor(hostName = initialParams.hostName, useTLs = initialParams.useTls)
+            EngineInteractor(useTLs = initialParams.useTls, hostName = initialParams.hostName)
     }
 
-    fun pair(
-        pairingParams: ClientTypes.PairParams
-    ) {
+    fun pair(pairingParams: ClientTypes.PairParams) {
+
         require(this::engineInteractor.isInitialized) {
             "Initialize must be called prior to pairing"
         }

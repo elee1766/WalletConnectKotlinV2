@@ -61,8 +61,6 @@ tasks.check { dependsOn(intTest) }
 //endregion
 
 dependencies {
-    //todo extract to Dependencies
-    "implementation"( "org.whispersystems:curve25519-android:0.5.0")
     lazySodium()
     coroutines()
     moshi()
