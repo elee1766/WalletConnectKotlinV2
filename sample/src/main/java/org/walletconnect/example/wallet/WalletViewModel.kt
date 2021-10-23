@@ -39,7 +39,13 @@ class WalletViewModel : ViewModel() {
         )
 
         activeSessions += session
-        WalletConnectClient.approve(sessionProposal.copy(accounts = listOf("eip155:137:0x022c0c42a80bd19EA4cF0F94c4F9F96645759716")))
+
+        val accounts = sessionProposal.chains.map { chainId ->
+            "$chainId:0x022c0c42a80bd19EA4cF0F94c4F9F96645759716"
+        }
+
+        WalletConnectClient.approve(sessionProposal.copy(accounts = accounts))
+
         viewModelScope.launch {
             _eventFlow.emit(UpdateActiveSessions(activeSessions))
         }

@@ -1,8 +1,10 @@
 package org.walletconnect.walletconnectv2.relay
 
+import android.app.Application
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.tinder.scarlet.Scarlet
+import com.tinder.scarlet.lifecycle.android.AndroidLifecycle
 import com.tinder.scarlet.messageadapter.moshi.MoshiMessageAdapter
 import com.tinder.scarlet.retry.LinearBackoffStrategy
 import com.tinder.scarlet.utils.getRawType
@@ -24,7 +26,8 @@ import java.util.concurrent.TimeUnit
 class WakuRelayRepository internal constructor(
     private val useTLs: Boolean,
     private val hostName: String,
-    private val port: Int
+    private val port: Int,
+    private val application: Application
 ) {
     //region Move to DI module
     private val okHttpClient = OkHttpClient.Builder()
@@ -53,6 +56,7 @@ class WakuRelayRepository internal constructor(
         Scarlet.Builder()
             .backoffStrategy(LinearBackoffStrategy(TimeUnit.MINUTES.toMillis(DEFAULT_BACKOFF_MINUTES)))
             .webSocketFactory(okHttpClient.newWebSocketFactory(getServerUrl()))
+            .lifecycle(AndroidLifecycle.ofApplicationForeground(application))
             .addMessageAdapterFactory(MoshiMessageAdapter.Factory(moshi))
             .addStreamAdapterFactory(FlowStreamAdapter.Factory())
             .build()
@@ -92,6 +96,16 @@ class WakuRelayRepository internal constructor(
         relay.publishRequest(publishRequest)
     }
 
+    fun publishSessionProposalAcknowledgment(id: Long) {
+        val publishRequest =
+            Relay.Subscription.Acknowledgement(
+                id = id,
+                result = true
+            )
+        relay.publishSubscriptionAcknowledgment(publishRequest)
+    }
+
+
     fun subscribe(topic: Topic) {
         val subscribeRequest =
             Relay.Subscribe.Request(
@@ -115,7 +129,8 @@ class WakuRelayRepository internal constructor(
         fun initRemote(
             useTLs: Boolean = false,
             hostName: String,
-            port: Int = 0
-        ) = WakuRelayRepository(useTLs, hostName, port)
+            port: Int = 0,
+            application: Application
+        ) = WakuRelayRepository(useTLs, hostName, port, application)
     }
 }

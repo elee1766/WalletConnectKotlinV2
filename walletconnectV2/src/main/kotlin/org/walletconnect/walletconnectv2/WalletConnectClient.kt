@@ -27,7 +27,8 @@ object WalletConnectClient {
         // TODO: pass properties to DI framework
         val engineFactory = EngineInteractor.EngineFactory(
             useTLs = initialParams.useTls,
-            hostName = initialParams.hostName
+            hostName = initialParams.hostName,
+            application = initialParams.application
         )
         engineInteractor.initialize(engineFactory)
     }
