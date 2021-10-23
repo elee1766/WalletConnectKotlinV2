@@ -20,11 +20,11 @@ class WalletFragment : Fragment(R.layout.wallet_fragment) {
         setupToolbar()
         binding.sessions.adapter = sessionAdapter
 
-        if (viewModel.activeSessions.isEmpty()) {
-            sessionAdapter.updateList(DEFAULT_SESSION_LIST)
-        } else {
+//        if (viewModel.activeSessions.isEmpty()) {
+//            sessionAdapter.updateList(DEFAULT_SESSION_LIST)
+//        } else {
             sessionAdapter.updateList(viewModel.activeSessions)
-        }
+//        }
 
         viewModel.eventFlow.observe(viewLifecycleOwner, { event ->
             when (event) {
@@ -60,23 +60,23 @@ class WalletFragment : Fragment(R.layout.wallet_fragment) {
         }
     }
 
-    private companion object {
-        val DEFAULT_SESSION_LIST = listOf(
-            Session(
-                name = "UniSwap",
-                uri = "app.uniswap.org",
-                icon = R.drawable.ic_uniswap
-            ),
-            Session(
-                name = "PancakeSwap",
-                uri = "app.pancake.org",
-                icon = R.drawable.ic_pancakeswap
-            ),
-            Session(
-                name = "SushiSwap",
-                uri = "app.sushiswap.org",
-                icon = R.drawable.ic_sushiswap
-            )
-        )
-    }
+//    private companion object {
+//        val DEFAULT_SESSION_LIST = listOf(
+//            Session(
+//                name = "UniSwap",
+//                uri = "app.uniswap.org",
+//                icon = R.drawable.ic_uniswap
+//            ),
+//            Session(
+//                name = "PancakeSwap",
+//                uri = "app.pancake.org",
+//                icon = R.drawable.ic_pancakeswap
+//            ),
+//            Session(
+//                name = "SushiSwap",
+//                uri = "app.sushiswap.org",
+//                icon = R.drawable.ic_sushiswap
+//            )
+//        )
+//    }
 }

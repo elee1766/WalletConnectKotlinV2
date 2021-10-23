@@ -11,7 +11,7 @@ data class SettledSessionSequence(
     val relay: RelayProtocolOptions,
     val selfPublicKey: PublicKey,
     val peerPublicKey: PublicKey,
-    val sequencePermissions: SessionProposedPermissions,
+    val sharedKey: String,
     val expiry: Expiry,
     val state: SessionState
 )

@@ -32,7 +32,6 @@ internal class MappingFunctionsTest {
 
         assertNotNull(pairingProposal)
         assert(pairingProposal.topic.topicValue.isNotBlank())
-        assertFalse(pairingProposal.relay.isEmpty)
         assert(pairingProposal.pairingProposer.publicKey.isNotBlank())
         assert(pairingProposal.ttl.seconds > 0)
     }

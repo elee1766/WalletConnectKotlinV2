@@ -1,6 +1,5 @@
 package org.walletconnect.walletconnectv2.client
 
-import org.walletconnect.walletconnectv2.clientcomm.session.Session
 import java.net.URI
 
 sealed interface WalletConnectClientListeners {
@@ -15,5 +14,9 @@ data class SessionProposal(
     val dappUrl: String,
     val icon: List<URI>,
     val chains: List<String>,
-    var methods: List<String>
+    var methods: List<String>,
+    val topic: String,
+    val proposerPublicKey: String,
+    val ttl: Long,
+    val accounts: List<String> = listOf()
 )

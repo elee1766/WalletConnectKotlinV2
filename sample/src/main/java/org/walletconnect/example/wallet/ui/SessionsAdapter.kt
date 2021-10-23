@@ -1,5 +1,6 @@
 package org.walletconnect.example.wallet.ui
 
+import android.net.Uri
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -33,7 +34,7 @@ class SessionViewHolder(val view: View) : RecyclerView.ViewHolder(view) {
     private val binding = SessionItemBinding.bind(view)
 
     fun bind(session: Session) = with(binding) {
-        icon.setImageDrawable(ContextCompat.getDrawable(view.context, session.icon))
+        icon.setImageURI(Uri.parse(session.uri))
         name.text = session.name
         uri.text = session.uri
     }

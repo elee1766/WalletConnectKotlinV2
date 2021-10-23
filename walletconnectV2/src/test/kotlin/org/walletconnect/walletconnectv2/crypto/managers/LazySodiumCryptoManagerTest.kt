@@ -50,7 +50,7 @@ internal class LazySodiumCryptoManagerTest {
     fun `Generate a shared key and return a Topic object`() {
         val peerKey = PublicKey("D083CDBBD08B93BD9AD10E95712DC0D4BD880401B04D587D8D3782FEA0CD31A9")
 
-        val topic = sut.generateSharedKey(publicKey, peerKey)
+        val (sharedKey, topic) = sut.generateTopicAndSharedKey(publicKey, peerKey)
 
         assert(topic.topicValue.isNotBlank())
         assert(topic.topicValue.length == 64)

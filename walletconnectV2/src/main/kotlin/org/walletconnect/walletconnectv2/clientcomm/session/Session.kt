@@ -2,7 +2,6 @@ package org.walletconnect.walletconnectv2.clientcomm.session
 
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonClass
-import org.json.JSONObject
 import org.walletconnect.walletconnectv2.clientcomm.session.proposal.SessionProposedPermissions
 import org.walletconnect.walletconnectv2.clientcomm.session.proposal.SessionProposer
 import org.walletconnect.walletconnectv2.clientcomm.session.proposal.SessionSignal
@@ -12,7 +11,6 @@ import org.walletconnect.walletconnectv2.common.Expiry
 import org.walletconnect.walletconnectv2.common.Topic
 import org.walletconnect.walletconnectv2.common.Ttl
 import org.walletconnect.walletconnectv2.common.network.adapters.ExpiryAdapter
-import org.walletconnect.walletconnectv2.common.network.adapters.JSONObjectAdapter
 import org.walletconnect.walletconnectv2.common.network.adapters.TopicAdapter
 import org.walletconnect.walletconnectv2.common.network.adapters.TtlAdapter
 
@@ -21,7 +19,6 @@ data class RelayProtocolOptions(
 )
 
 sealed class Session {
-
     @JsonClass(generateAdapter = true)
     data class Proposal(
         @Json(name = "topic")

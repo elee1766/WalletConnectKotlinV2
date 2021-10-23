@@ -5,14 +5,10 @@ package org.walletconnect.walletconnectv2.common
 import com.squareup.moshi.Moshi
 import org.json.JSONObject
 import org.walletconnect.walletconnectv2.clientcomm.PreSettlementPairing
-import org.walletconnect.walletconnectv2.clientcomm.PreSettlementSession
 import org.walletconnect.walletconnectv2.clientcomm.pairing.Pairing
 import org.walletconnect.walletconnectv2.clientcomm.pairing.proposal.PairingProposer
 import org.walletconnect.walletconnectv2.clientcomm.pairing.success.PairingParticipant
 import org.walletconnect.walletconnectv2.clientcomm.pairing.success.PairingState
-import org.walletconnect.walletconnectv2.clientcomm.session.Session
-import org.walletconnect.walletconnectv2.clientcomm.session.success.SessionParticipant
-import org.walletconnect.walletconnectv2.clientcomm.session.success.SessionState
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
 import org.walletconnect.walletconnectv2.relay.data.model.Relay
 import java.net.URI
@@ -64,7 +60,11 @@ internal fun Pairing.Proposal.toApprove(
     )
 }
 
-internal fun PreSettlementPairing.Approve.toRelayPublishRequest(id: Long, topic: Topic, moshi: Moshi): Relay.Publish.Request {
+internal fun PreSettlementPairing.Approve.toRelayPublishRequest(
+    id: Long,
+    topic: Topic,
+    moshi: Moshi
+): Relay.Publish.Request {
     val pairingApproveJson = moshi.adapter(PreSettlementPairing.Approve::class.java).toJson(this)
     val hexEncodedJson = pairingApproveJson.encodeToByteArray().joinToString(separator = "") {
         String.format("%02X", it)
@@ -75,27 +75,3 @@ internal fun PreSettlementPairing.Approve.toRelayPublishRequest(id: Long, topic:
         params = Relay.Publish.Request.Params(topic = topic, message = hexEncodedJson.lowercase())
     )
 }
-
-internal fun Session.Proposal.toApprove(
-    id: Long,
-    expiry: Expiry,
-    selfPublicKey: PublicKey,
-    state: SessionState
-): PreSettlementSession.Approve {
-    return PreSettlementSession.Approve(
-        id = id,
-        params = this.toSessionSuccess(expiry, selfPublicKey, state)
-    )
-}
-
-private fun Session.Proposal.toSessionSuccess(
-    expiry: Expiry,
-    selfPublicKey: PublicKey,
-    state: SessionState
-): Session.Success =
-    Session.Success(
-        relay = relay,
-        state = state,
-        expiry = expiry,
-        responder = SessionParticipant(selfPublicKey.keyAsHex)
-    )

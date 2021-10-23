@@ -1,6 +1,5 @@
 package org.walletconnect.walletconnectv2.crypto.managers
 
-
 import com.goterl.lazysodium.LazySodiumAndroid
 import com.goterl.lazysodium.SodiumAndroid
 import com.goterl.lazysodium.utils.HexMessageEncoder
@@ -17,7 +16,6 @@ import org.walletconnect.walletconnectv2.crypto.data.Key as WCKey
 
 class LazySodiumCryptoManager(private val keyChain: KeyChain) : CryptoManager {
     private val lazySodium = LazySodiumAndroid(SodiumAndroid())
-//        LazySodiumJava(SodiumJava(LibraryLoader.Mode.BUNDLED_ONLY), StandardCharsets.UTF_8)
 
     override fun hasKeys(tag: String): Boolean {
         return keyChain.getKey(tag).isNotBlank()
@@ -32,27 +30,26 @@ class LazySodiumCryptoManager(private val keyChain: KeyChain) : CryptoManager {
         }
 
         setKeyPair(publicKey, privateKey)
-
         return publicKey
     }
 
-    override fun generateSharedKey(
+    override fun generateTopicAndSharedKey(
         self: PublicKey,
         peer: PublicKey,
         overrideTopic: String?
-    ): Topic {
+    ): Pair<String, Topic> {
         val (publicKey, privateKey) = getKeyPair(self)
         val sharedKey = lazySodium.cryptoScalarMult(privateKey.toKey(), peer.toKey())
 
-        return setEncryptionKeys(sharedKey.asHexString.lowercase(), publicKey, overrideTopic)
+        return Pair(
+            sharedKey.asHexString.lowercase(),
+            setEncryptionKeys(sharedKey.asHexString.lowercase(), publicKey, overrideTopic)
+        )
     }
 
     override fun getSharedKey(self: PublicKey, peer: PublicKey): String {
         val (_, selfPrivateKey) = getKeyPair(self)
-
-        return lazySodium.cryptoScalarMult(selfPrivateKey.toKey(), peer.toKey()).asHexString.also {
-            println("SelfPublic: ${self.keyAsHex}\nSelfPrivate: ${selfPrivateKey.keyAsHex}\nPeerKey: ${peer.keyAsHex}\nSharedKey: $it")
-        }
+        return lazySodium.cryptoScalarMult(selfPrivateKey.toKey(), peer.toKey()).asHexString
     }
 
     internal fun getSharedKeyUsingPrivate(self: PrivateKey, peer: PublicKey): String {
@@ -74,7 +71,6 @@ class LazySodiumCryptoManager(private val keyChain: KeyChain) : CryptoManager {
         val keys = concatKeys(sharedKeyObject, selfPublicKey)
 
         keyChain.setKey(topic.topicValue, keys)
-
         return topic
     }
 

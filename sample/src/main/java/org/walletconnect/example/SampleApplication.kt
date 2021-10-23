@@ -5,7 +5,7 @@ import org.walletconnect.walletconnectv2.WalletConnectClient
 import org.walletconnect.walletconnectv2.client.ClientTypes
 import org.walletconnect.walletconnectv2.client.WalletConnectClientListeners
 
-class SampleApplication: Application() {
+class SampleApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()

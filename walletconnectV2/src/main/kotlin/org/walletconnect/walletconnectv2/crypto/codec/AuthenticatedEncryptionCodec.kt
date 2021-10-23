@@ -17,7 +17,7 @@ class AuthenticatedEncryptionCodec : Codec {
     override fun encrypt(
         message: String,
         sharedKey: String,
-        selfPublicKey: PublicKey
+        publicKey: PublicKey
     ): EncryptionPayload {
         val (encryptionKey, authenticationKey) = getKeys(sharedKey)
 
@@ -33,11 +33,11 @@ class AuthenticatedEncryptionCodec : Codec {
         val cipherText: ByteArray = cipher.doFinal(data)
 
         val computedMac: String =
-            computeHmac(cipherText, iv, authenticationKey, selfPublicKey.keyAsHex.hexToBytes())
+            computeHmac(cipherText, iv, authenticationKey, publicKey.keyAsHex.hexToBytes())
 
         return EncryptionPayload(
             iv = iv.bytesToHex(),
-            publicKey = selfPublicKey.keyAsHex,
+            publicKey = publicKey.keyAsHex,
             mac = computedMac,
             cipherText = cipherText.bytesToHex()
         )
