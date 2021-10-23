@@ -28,9 +28,7 @@ class WalletFragment : Fragment(R.layout.wallet_fragment) {
                         { viewModel.approve() },
                         { viewModel.reject() },
                         event.proposal
-                    ).run {
-                        show()
-                    }
+                    ).show()
                 }
                 is UpdateActiveSessions -> {
                     sessionAdapter.updateList(event.sessions)
