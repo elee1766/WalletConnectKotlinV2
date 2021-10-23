@@ -2,7 +2,10 @@ package org.walletconnect.example.wallet.ui
 
 import android.content.Context
 import android.net.Uri
+import android.util.Log
 import androidx.core.content.ContextCompat
+import com.bumptech.glide.Glide
+import com.bumptech.glide.request.RequestOptions
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import org.walletconnect.example.databinding.SessionProposalDialogBinding
 import org.walletconnect.walletconnectv2.client.SessionProposal
@@ -22,7 +25,9 @@ class SessionProposalDialog(
     }
 
     private fun setContent() = with(binding) {
-        icon.setImageURI(Uri.parse(proposal.icon.first().toString()))
+        Glide.with(context)
+            .load(Uri.parse(proposal.icon.first().toString()))
+            .into(icon)
         name.text = proposal.name
         uri.text = proposal.dappUrl
         description.text = proposal.description

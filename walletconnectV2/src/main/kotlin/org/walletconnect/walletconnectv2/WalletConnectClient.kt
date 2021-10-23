@@ -29,7 +29,8 @@ object WalletConnectClient {
             useTLs = initialParams.useTls,
             hostName = initialParams.hostName,
             apiKey = initialParams.apiKey,
-            isController = initialParams.isController
+            isController = initialParams.isController,
+            application = initialParams.application
         )
         engineInteractor.initialize(engineFactory)
     }

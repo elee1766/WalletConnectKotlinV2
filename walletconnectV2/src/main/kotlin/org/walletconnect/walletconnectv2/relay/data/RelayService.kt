@@ -28,6 +28,9 @@ interface RelayService {
     fun observeSubscriptionRequest(): Flow<Relay.Subscription.Request>
 
     @Send
+    fun publishSubscriptionAcknowledgment(publishRequest: Relay.Subscription.Acknowledgement)
+
+    @Send
     fun subscriptionAcknowledgement(subscriptionAcknowledgement: Relay.Subscription.Acknowledgement)
 
     @Send

@@ -1,9 +1,11 @@
 package org.walletconnect.walletconnectv2.engine
 
+import android.app.Application
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.supervisorScope
 import org.json.JSONObject
 import org.walletconnect.walletconnectv2.WalletConnectScope.scope
 import org.walletconnect.walletconnectv2.client.SessionProposal
@@ -62,11 +64,18 @@ class EngineInteractor {
         relayRepository = WakuRelayRepository.initRemote(
             engineFactory.useTLs,
             engineFactory.hostName,
-            engineFactory.apiKey
+            engineFactory.apiKey,
+            engineFactory.application
         )
 
         scope.launch {
             relayRepository.subscriptionRequest.collect {
+
+                supervisorScope {
+                    println("PUBLISH")
+                    relayRepository.publishSessionProposalAcknowledgment(it.id)
+                }
+
                 val pairingPayloadJson = codec.decrypt(
                     it.params.subscriptionData.message.toEncryptionPayload(),
                     crypto.getSharedKey(pairingPublicKey, peerPublicKey)
@@ -200,6 +209,7 @@ class EngineInteractor {
         val useTLs: Boolean = false,
         val hostName: String,
         val apiKey: String,
-        val isController: Boolean
+        val isController: Boolean,
+        val application: Application
     )
 }
