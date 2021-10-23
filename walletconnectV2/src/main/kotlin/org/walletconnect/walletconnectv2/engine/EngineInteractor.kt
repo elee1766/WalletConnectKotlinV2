@@ -1,7 +1,5 @@
 package org.walletconnect.walletconnectv2.engine
 
-import com.tinder.scarlet.Stream
-import com.tinder.scarlet.WebSocket
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
@@ -110,21 +108,8 @@ class EngineInteractor {
                 selfPublicKey
             )
 
-        relayRepository.eventsStream.start(object : Stream.Observer<WebSocket.Event> {
-            override fun onComplete() {}
-
-            override fun onError(throwable: Throwable) {}
-
-            override fun onNext(data: WebSocket.Event) {
-                if (data is WebSocket.Event.OnConnectionOpened<*>) {
-                    relayRepository.subscribe(settledSequence.settledTopic)
-                    relayRepository.publishPairingApproval(
-                        pairingProposal.topic,
-                        preSettlementPairingApprove
-                    )
-                }
-            }
-        })
+        relayRepository.subscribe(settledSequence.settledTopic)
+        relayRepository.publishPairingApproval(pairingProposal.topic, preSettlementPairingApprove)
     }
 
     private fun settlePairingSequence(
@@ -211,5 +196,9 @@ class EngineInteractor {
         )
     }
 
-    data class EngineFactory(val useTLs: Boolean = false, val hostName: String, val port: Int = 0)
+    data class EngineFactory(
+        val useTLs: Boolean = false,
+        val hostName: String,
+        val port: Int = 0
+    )
 }

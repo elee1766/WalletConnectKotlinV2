@@ -3,7 +3,6 @@ package org.walletconnect.example
 import android.app.Application
 import org.walletconnect.walletconnectv2.WalletConnectClient
 import org.walletconnect.walletconnectv2.client.ClientTypes
-import org.walletconnect.walletconnectv2.client.WalletConnectClientListeners
 
 class SampleApplication : Application() {
 

@@ -104,16 +104,18 @@ class WakuRelayRepository internal constructor(
     fun parseToPairingPayload(json: String): PairingPayload? =
         moshi.adapter(PairingPayload::class.java).fromJson(json)
 
-
     private fun getServerUrl(): String {
         return (if (useTLs) "wss" else "ws") + "://$hostName" + if (port > 0) ":$port" else ""
     }
 
     companion object {
-        private const val TIMEOUT_TIME = 50000L
+        private const val TIMEOUT_TIME = 5000L
         private const val DEFAULT_BACKOFF_MINUTES = 5L
 
-        fun initRemote(useTLs: Boolean = false, hostName: String, port: Int = 0) =
-            WakuRelayRepository(useTLs, hostName, port)
+        fun initRemote(
+            useTLs: Boolean = false,
+            hostName: String,
+            port: Int = 0
+        ) = WakuRelayRepository(useTLs, hostName, port)
     }
 }

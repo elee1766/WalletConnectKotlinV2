@@ -21,30 +21,14 @@ class WalletViewModel : ViewModel() {
     val activeSessions: MutableList<Session> = mutableListOf()
     lateinit var sessionProposal: SessionProposal
 
-    init {
-        val uri =
-            "wc:79ddf2dd74e1e3cd0717bc9239e04ef6eb61ee60dc863c8feee99e5b6a195327@2?controller=false&publicKey=19bc598e3d972fb72cd61051d0ddd526746d998deb308f7139eefdf97922f570&relay=%7B%22protocol%22%3A%22waku%22%7D"
-
-        viewModelScope.launch {
-            WalletConnectClient.pair(ClientTypes.PairParams(uri)) { sessionProposal ->
-                viewModelScope.launch {
-                    this@WalletViewModel.sessionProposal = sessionProposal
-                    _eventFlow.emit(ShowSessionProposalDialog(sessionProposal))
-                }
+    fun pair(uri: String) {
+        val pairParams = ClientTypes.PairParams(uri.trim())
+        WalletConnectClient.pair(pairParams) { sessionProposal ->
+            viewModelScope.launch {
+                this@WalletViewModel.sessionProposal = sessionProposal
+                _eventFlow.emit(ShowSessionProposalDialog(sessionProposal))
             }
         }
-    }
-
-    fun pair(uri: String) {
-//        val pairParams = ClientTypes.PairParams(uri)
-//        viewModelScope.launch {
-//            WalletConnectClient.pair(pairParams) { sessionProposal ->
-//                viewModelScope.launch {
-//                    this@WalletViewModel.sessionProposal = sessionProposal
-//                    _eventFlow.emit(ShowSessionProposalDialog(sessionProposal))
-//                }
-//            }
-//        }
     }
 
     fun approve() {
