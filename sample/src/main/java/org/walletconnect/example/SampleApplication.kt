@@ -9,7 +9,7 @@ class SampleApplication : Application() {
     override fun onCreate() {
         super.onCreate()
 
-        val initParams = ClientTypes.InitialParams(true, "relay.walletconnect.org", "", true)
+        val initParams = ClientTypes.InitialParams(hostName = "relay.walletconnect.org")
         WalletConnectClient.initialize(initParams)
     }
 }

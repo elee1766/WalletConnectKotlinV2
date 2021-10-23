@@ -24,7 +24,7 @@ import java.util.concurrent.TimeUnit
 class WakuRelayRepository internal constructor(
     private val useTLs: Boolean,
     private val hostName: String,
-    private val port: Int
+    private val apiKey: String
 ) {
     //region Move to DI module
     private val okHttpClient = OkHttpClient.Builder()
@@ -105,7 +105,7 @@ class WakuRelayRepository internal constructor(
         moshi.adapter(PairingPayload::class.java).fromJson(json)
 
     private fun getServerUrl(): String {
-        return (if (useTLs) "wss" else "ws") + "://$hostName" + if (port > 0) ":$port" else ""
+        return (if (useTLs) "wss" else "ws") + "://$hostName?apiKey=$apiKey"
     }
 
     companion object {
@@ -115,7 +115,7 @@ class WakuRelayRepository internal constructor(
         fun initRemote(
             useTLs: Boolean = false,
             hostName: String,
-            port: Int = 0
-        ) = WakuRelayRepository(useTLs, hostName, port)
+            apiKey: String = ""
+        ) = WakuRelayRepository(useTLs, hostName, apiKey)
     }
 }

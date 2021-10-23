@@ -62,7 +62,7 @@ class EngineInteractor {
         relayRepository = WakuRelayRepository.initRemote(
             engineFactory.useTLs,
             engineFactory.hostName,
-            engineFactory.port
+            engineFactory.apiKey
         )
 
         scope.launch {
@@ -199,6 +199,7 @@ class EngineInteractor {
     data class EngineFactory(
         val useTLs: Boolean = false,
         val hostName: String,
-        val port: Int = 0
+        val apiKey: String,
+        val isController: Boolean
     )
 }
