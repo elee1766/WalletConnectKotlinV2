@@ -35,7 +35,7 @@ class WalletViewModel : ViewModel() {
         }
     }
 
-//    fun pair(uri: String) {
+    fun pair(uri: String) {
 //        val pairParams = ClientTypes.PairParams(uri)
 //        viewModelScope.launch {
 //            WalletConnectClient.pair(pairParams) { sessionProposal ->
@@ -45,7 +45,7 @@ class WalletViewModel : ViewModel() {
 //                }
 //            }
 //        }
-//    }
+    }
 
     fun approve() {
         val session = Session(
