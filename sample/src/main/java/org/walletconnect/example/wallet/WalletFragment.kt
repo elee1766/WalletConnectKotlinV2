@@ -25,11 +25,9 @@ class WalletFragment : Fragment(R.layout.wallet_fragment) {
             when (event) {
                 is ShowSessionProposalDialog -> {
                     proposalDialog = SessionProposalDialog(
-                        requireContext(),
-                        { viewModel.approve() },
-                        { viewModel.reject() },
-                        event.proposal
-                    ).apply { show() }
+                        requireContext(), viewModel::approve, viewModel::reject, event.proposal
+                    )
+                        .apply { show() }
                 }
                 is UpdateActiveSessions -> {
                     proposalDialog?.dismiss()
@@ -49,9 +47,7 @@ class WalletFragment : Fragment(R.layout.wallet_fragment) {
                     true
                 }
                 R.id.pasteUri -> {
-                    UrlDialog(
-                        requireContext(),
-                        approve = { url -> viewModel.pair(url) }).run { show() }
+                    UrlDialog(requireContext(), viewModel::pair).show()
                     true
                 }
                 else -> false
