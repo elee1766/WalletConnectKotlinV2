@@ -7,6 +7,8 @@ plugins {
     `maven-publish`
 }
 
+group = "com.github.WalletConnect-Labs"
+
 tasks.withType<Test> {
     useJUnitPlatform()
 }
