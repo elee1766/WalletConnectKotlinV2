@@ -73,7 +73,7 @@ fun DependencyHandlerScope.lazySodium() {
     val slf4jVersion = "1.7.32"
 
     "implementation"("com.goterl:lazysodium-android:$lazySodiumVersion")
-    "implementation"("net.java.dev.jna:jna:$jnaVersion")
+    "api"("net.java.dev.jna:jna:$jnaVersion")
     "testImplementation"("org.slf4j:slf4j-nop:$slf4jVersion")
 }
 
