@@ -26,19 +26,25 @@ android {
     buildTypes {
         getByName("release") {
             isMinifyEnabled = false
-            proguardFiles(
-                getDefaultProguardFile("proguard-android-optimize.txt"),
-                "proguard-rules.pro"
-            )
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
+
     compileOptions {
         sourceCompatibility = jvmVersion
         targetCompatibility = jvmVersion
     }
+
     kotlinOptions {
         jvmTarget = jvmVersion.toString()
     }
+
+    sourceSets {
+//        getByName("main").jniLibs.srcDir("src/main/jniLibs")
+//        getByName("debug").jniLibs.srcDir("src/main/jniLibs")
+//        getByName("release").jniLibs.srcDir("src/main/jniLibs")
+    }
+
 }
 
 kotlin {
@@ -53,6 +59,9 @@ kotlin {
 }
 
 dependencies {
+//    implementation(fileTree(mapOf("dir" to "src/main/jniLibs", "include" to listOf("*.jar"))))
+    implementation(fileTree(mapOf("dir" to "src/main/libs", "include" to listOf("*.jar"))))
+
     okhttp()
     lazySodium()
     coroutines()
