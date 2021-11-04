@@ -29,10 +29,12 @@ android {
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
         }
     }
+
     compileOptions {
         sourceCompatibility = jvmVersion
         targetCompatibility = jvmVersion
     }
+
     kotlinOptions {
         jvmTarget = jvmVersion.toString()
     }
@@ -40,6 +42,8 @@ android {
 
 dependencies {
     implementation(project(":walletconnectv2"))
+//    implementation("com.github.WalletConnect-Labs:WalletConnectKotlinV2:1.0.0-test04")
+//    implementation("net.java.dev.jna:jna:5.8.0@aar")
 //    implementation("com.walletconnect:walletconnectv2:1.0.0-alpha01")
 
     coroutines()

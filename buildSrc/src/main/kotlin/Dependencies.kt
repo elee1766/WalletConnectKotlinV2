@@ -69,11 +69,11 @@ fun DependencyHandlerScope.okhttp() {
 
 fun DependencyHandlerScope.lazySodium() {
     val lazySodiumVersion = "5.0.2@aar"
-    val jnaVersion = "5.8.0@aar"
+    val jnaVersion = "5.9.0@aar"
     val slf4jVersion = "1.7.32"
 
     "implementation"("com.goterl:lazysodium-android:$lazySodiumVersion")
-    "api"("net.java.dev.jna:jna:$jnaVersion")
+    "implementation"("net.java.dev.jna:jna:$jnaVersion")
     "testImplementation"("org.slf4j:slf4j-nop:$slf4jVersion")
 }
 
