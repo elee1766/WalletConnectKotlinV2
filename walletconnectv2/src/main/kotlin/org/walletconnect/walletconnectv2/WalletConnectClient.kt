@@ -4,13 +4,18 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.walletconnect.walletconnectv2.client.ClientTypes
 import org.walletconnect.walletconnectv2.client.WalletConnectClientListener
+import org.walletconnect.walletconnectv2.client.WalletConnectClientListeners
 import org.walletconnect.walletconnectv2.engine.EngineInteractor
 import org.walletconnect.walletconnectv2.engine.sequence.*
 import timber.log.Timber
 
 object WalletConnectClient {
     private val engineInteractor = EngineInteractor()
-    private var listener: WalletConnectClientListener? = null
+    private var walletConnectListener: WalletConnectClientListener? = null
+    private var pairingListener: WalletConnectClientListeners.Pairing? = null
+    private var sessionApproveListener: WalletConnectClientListeners.SessionApprove? = null
+    private var sessionRejectListener: WalletConnectClientListeners.SessionReject? = null
+    private var sessionDeleteListener: WalletConnectClientListeners.SessionDelete? = null
 
     init {
         Timber.plant(Timber.DebugTree())
@@ -18,39 +23,59 @@ object WalletConnectClient {
         scope.launch {
             engineInteractor.sequenceEvent.collect { event ->
                 when (event) {
-                    is OnSessionProposal -> listener?.onSessionProposal(event.proposal)
-                    is OnSessionSettled -> listener?.onSettledSession(event.session)
-                    is OnSessionRequest -> listener?.onSessionRequest(event.request)
-                    is OnSessionDeleted -> listener?.onSessionDelete(event.topic, event.reason)
+                    is OnSessionProposal -> walletConnectListener?.onSessionProposal(event.proposal)
+                    is OnSessionRequest -> walletConnectListener?.onSessionRequest(event.request)
+                    is OnSessionDeleted -> walletConnectListener?.onSessionDelete(event.topic, event.reason)
                     else -> Unsupported
                 }
             }
         }
     }
 
-
     fun initialize(initialParams: ClientTypes.InitialParams) = with(initialParams) {
         // TODO: pass properties to DI framework
-        val engineFactory =
-            EngineInteractor
-                .EngineFactory(useTls, hostName, apiKey, isController, application, metadata)
+        val engineFactory = EngineInteractor.EngineFactory(useTls, hostName, apiKey, isController, application, metadata)
         engineInteractor.initialize(engineFactory)
     }
 
-    fun pair(pairingParams: ClientTypes.PairParams, listener: WalletConnectClientListener) {
-        this.listener = listener
-        scope.launch { engineInteractor.pair(pairingParams.uri, ) }
+    fun setWalletConnectListener(walletConnectListener: WalletConnectClientListener) {
+        this.walletConnectListener = walletConnectListener
     }
 
-    fun approve(approveParams: ClientTypes.ApproveParams) = with(approveParams) {
+    fun pair(
+        pairingParams: ClientTypes.PairParams,
+        listener: WalletConnectClientListeners.Pairing
+    ) {
+        pairingListener = listener
+        engineInteractor.pair(pairingParams.uri) { result ->
+            result.fold(
+                onSuccess = { topic -> listener.onSuccess(topic) },
+                onFailure = { error -> listener.onError(error) }
+            )
+        }
+    }
+
+    fun approve(
+        approveParams: ClientTypes.ApproveParams,
+        listener: WalletConnectClientListeners.SessionApprove
+    ) = with(approveParams) {
+        sessionApproveListener = listener
         engineInteractor.approve(proposal, accounts)
     }
 
-    fun reject(rejectParams: ClientTypes.RejectParams) = with(rejectParams) {
+    fun reject(
+        rejectParams: ClientTypes.RejectParams,
+        listener: WalletConnectClientListeners.SessionReject
+    ) = with(rejectParams) {
+        sessionRejectListener = listener
         engineInteractor.reject(rejectionReason, proposalTopic)
     }
 
-    fun disconnect(disconnectParams: ClientTypes.DisconnectParams) = with(disconnectParams) {
+    fun disconnect(
+        disconnectParams: ClientTypes.DisconnectParams,
+        listener: WalletConnectClientListeners.SessionDelete
+    ) = with(disconnectParams) {
+        sessionDeleteListener = listener
         engineInteractor.disconnect(topic, reason)
     }
 }

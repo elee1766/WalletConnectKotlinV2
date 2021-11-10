@@ -11,7 +11,6 @@ import org.walletconnect.walletconnectv2.common.network.adapters.TtlAdapter
 import org.walletconnect.walletconnectv2.crypto.data.EncryptionPayload
 import org.walletconnect.walletconnectv2.util.toEncryptionPayload
 
-// TODO: Maybe look into separating children into different files
 sealed class Relay {
     abstract val id: Long
     abstract val jsonrpc: String
@@ -43,7 +42,7 @@ sealed class Relay {
             )
         }
 
-        data class Acknowledgement(
+        data class Response(
             @Json(name = "id")
             override val id: Long,
             @Json(name = "jsonrpc")
@@ -75,7 +74,7 @@ sealed class Relay {
             )
         }
 
-        data class Acknowledgement(
+        data class Response(
             @Json(name = "id")
             override val id: Long,
             @Json(name = "jsonrpc")
@@ -101,8 +100,7 @@ sealed class Relay {
         ) : Subscription() {
 
             val subscriptionTopic: Topic = params.subscriptionData.topic
-            val encryptionPayload: EncryptionPayload =
-                params.subscriptionData.message.toEncryptionPayload()
+            val encryptionPayload: EncryptionPayload = params.subscriptionData.message.toEncryptionPayload()
 
             @JsonClass(generateAdapter = true)
             data class Params(
@@ -119,12 +117,12 @@ sealed class Relay {
                     @field:TopicAdapter.Qualifier
                     val topic: Topic,
                     @Json(name = "message")
-                    val message: String
+                    val message: String // protocol error or success response
                 )
             }
         }
 
-        data class Acknowledgement(
+        data class Response(
             @Json(name = "id")
             override val id: Long,
             @Json(name = "jsonrpc")
@@ -157,7 +155,7 @@ sealed class Relay {
             )
         }
 
-        data class Acknowledgement(
+        data class Response(
             @Json(name = "id")
             override val id: Long,
             @Json(name = "jsonrpc")
