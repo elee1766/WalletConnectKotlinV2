@@ -1,6 +1,6 @@
 package org.walletconnect.walletconnectv2.client
 
-//Note: should be as a global listener because when resubscribing it should be ready just from the initalization, without any public method call
+//Note: we should keep a global listener because when resubscribing the communication on topics should be ready just from the initialization, without any public method call
 interface WalletConnectClientListener {
     fun onSessionProposal(proposal: SessionProposal)
     fun onSessionRequest(request: SessionRequest)
@@ -15,15 +15,15 @@ sealed interface WalletConnectClientListeners {
         fun onSuccess(topic: String)
     }
 
-    interface SessionApprove : WalletConnectClientListeners {
-        fun onSuccess(session: SettledSession)
-    }
-
     interface SessionReject : WalletConnectClientListeners {
         fun onSuccess(topic: String)
     }
 
     interface SessionDelete : WalletConnectClientListeners {
-        fun onSuccess(topic: String, reason: String)
+        fun onSuccess(topic: String)
+    }
+
+    interface SessionApprove : WalletConnectClientListeners {
+        fun onSuccess(session: SettledSession)
     }
 }

@@ -25,14 +25,13 @@ class WalletViewModel : ViewModel(), WalletConnectClientListener {
 
     fun pair(uri: String) {
         val pairParams = ClientTypes.PairParams(uri.trim())
-
         WalletConnectClient.pair(pairParams, object : WalletConnectClientListeners.Pairing {
             override fun onSuccess(topic: String) {
-                Log.e("Pair Success:", "Pairing success: $topic")
+                //Settled pairing
             }
 
             override fun onError(error: Throwable) {
-                Log.e("Pair Error:", "$error")
+                //Pairing approval error
             }
         })
     }
@@ -42,16 +41,13 @@ class WalletViewModel : ViewModel(), WalletConnectClientListener {
         val approveParams: ClientTypes.ApproveParams = ClientTypes.ApproveParams(proposal, accounts)
 
         WalletConnectClient.approve(approveParams, object : WalletConnectClientListeners.SessionApprove {
-
             override fun onSuccess(session: SettledSession) {
                 settledSessions += session
-                viewModelScope.launch {
-                    _eventFlow.emit(UpdateActiveSessions(settledSessions))
-                }
+                viewModelScope.launch { _eventFlow.emit(UpdateActiveSessions(settledSessions)) }
             }
 
             override fun onError(error: Throwable) {
-                Log.e("Approve Session Error:", "$error")
+                //Approve session error
             }
         })
     }
@@ -60,17 +56,13 @@ class WalletViewModel : ViewModel(), WalletConnectClientListener {
         val rejectionReason = "Reject Session"
         val proposalTopic: String = proposal.topic
         val rejectParams: ClientTypes.RejectParams = ClientTypes.RejectParams(rejectionReason, proposalTopic)
-
         WalletConnectClient.reject(rejectParams, object : WalletConnectClientListeners.SessionReject {
-
             override fun onSuccess(topic: String) {
-                viewModelScope.launch {
-                    _eventFlow.emit(RejectSession)
-                }
+                viewModelScope.launch { _eventFlow.emit(RejectSession) }
             }
 
             override fun onError(error: Throwable) {
-                Log.e("Reject Session Error:", "$error")
+                //Proposal rejection error
             }
         })
     }
@@ -78,18 +70,14 @@ class WalletViewModel : ViewModel(), WalletConnectClientListener {
     @RequiresApi(Build.VERSION_CODES.N)
     fun disconnect(topic: String, reason: String = "Reason") {
         val disconnectParams = ClientTypes.DisconnectParams(topic, reason)
-
         WalletConnectClient.disconnect(disconnectParams, object : WalletConnectClientListeners.SessionDelete {
-
-            override fun onSuccess(topic: String, reason: String) {
+            override fun onSuccess(topic: String) {
                 settledSessions.removeIf { session -> session.topic == topic }
-                viewModelScope.launch {
-                    _eventFlow.emit(UpdateActiveSessions(settledSessions))
-                }
+                viewModelScope.launch { _eventFlow.emit(UpdateActiveSessions(settledSessions)) }
             }
 
             override fun onError(error: Throwable) {
-                Log.e("Delete Session Error:", "$error")
+                //Session disconnect error
             }
         })
     }
@@ -109,8 +97,6 @@ class WalletViewModel : ViewModel(), WalletConnectClientListener {
     @RequiresApi(Build.VERSION_CODES.N)
     override fun onSessionDelete(topic: String, reason: String) {
         settledSessions.removeIf { session -> session.topic == topic }
-        viewModelScope.launch {
-            _eventFlow.emit(UpdateActiveSessions(settledSessions))
-        }
+        viewModelScope.launch { _eventFlow.emit(UpdateActiveSessions(settledSessions)) }
     }
 }

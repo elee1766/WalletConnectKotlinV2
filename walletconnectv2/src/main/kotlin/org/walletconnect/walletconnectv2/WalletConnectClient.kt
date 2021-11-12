@@ -3,6 +3,7 @@ package org.walletconnect.walletconnectv2
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.walletconnect.walletconnectv2.client.ClientTypes
+import org.walletconnect.walletconnectv2.client.SettledSession
 import org.walletconnect.walletconnectv2.client.WalletConnectClientListener
 import org.walletconnect.walletconnectv2.client.WalletConnectClientListeners
 import org.walletconnect.walletconnectv2.engine.EngineInteractor
@@ -49,7 +50,7 @@ object WalletConnectClient {
         pairingListener = listener
         engineInteractor.pair(pairingParams.uri) { result ->
             result.fold(
-                onSuccess = { topic -> listener.onSuccess(topic) },
+                onSuccess = { topic -> listener.onSuccess(topic as String) },
                 onFailure = { error -> listener.onError(error) }
             )
         }
@@ -60,7 +61,12 @@ object WalletConnectClient {
         listener: WalletConnectClientListeners.SessionApprove
     ) = with(approveParams) {
         sessionApproveListener = listener
-        engineInteractor.approve(proposal, accounts)
+        engineInteractor.approve(proposal, accounts) { result ->
+            result.fold(
+                onSuccess = { settledSession -> listener.onSuccess(settledSession as SettledSession) },
+                onFailure = { error -> listener.onError(error) }
+            )
+        }
     }
 
     fun reject(
@@ -68,7 +74,12 @@ object WalletConnectClient {
         listener: WalletConnectClientListeners.SessionReject
     ) = with(rejectParams) {
         sessionRejectListener = listener
-        engineInteractor.reject(rejectionReason, proposalTopic)
+        engineInteractor.reject(rejectionReason, proposalTopic) { result ->
+            result.fold(
+                onSuccess = { topic -> listener.onSuccess(topic as String) },
+                onFailure = { error -> listener.onError(error) }
+            )
+        }
     }
 
     fun disconnect(
@@ -76,6 +87,11 @@ object WalletConnectClient {
         listener: WalletConnectClientListeners.SessionDelete
     ) = with(disconnectParams) {
         sessionDeleteListener = listener
-        engineInteractor.disconnect(topic, reason)
+        engineInteractor.disconnect(topic, reason) { result ->
+            result.fold(
+                onSuccess = { topic -> listener.onSuccess(topic as String) },
+                onFailure = { error -> listener.onError(error) }
+            )
+        }
     }
 }

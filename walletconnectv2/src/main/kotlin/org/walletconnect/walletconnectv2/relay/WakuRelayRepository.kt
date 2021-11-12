@@ -1,11 +1,8 @@
 package org.walletconnect.walletconnectv2.relay
 
 import android.app.Application
-import com.squareup.moshi.JsonAdapter
-import com.squareup.moshi.JsonDataException
-import com.squareup.moshi.JsonReader
-import com.squareup.moshi.adapter
 import com.tinder.scarlet.Scarlet
+import com.tinder.scarlet.WebSocket
 import com.tinder.scarlet.lifecycle.android.AndroidLifecycle
 import com.tinder.scarlet.messageadapter.moshi.MoshiMessageAdapter
 import com.tinder.scarlet.retry.LinearBackoffStrategy
@@ -13,24 +10,17 @@ import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.supervisorScope
 import okhttp3.OkHttpClient
-import org.json.JSONObject
-import org.walletconnect.walletconnectv2.clientsync.pairing.after.PostSettlementPairing
 import org.walletconnect.walletconnectv2.clientsync.pairing.before.PreSettlementPairing
-import org.walletconnect.walletconnectv2.clientsync.session.after.PostSettlementSession
-import org.walletconnect.walletconnectv2.clientsync.session.before.PreSettlementSession
-import org.walletconnect.walletconnectv2.common.*
-import org.walletconnect.walletconnectv2.errors.UnExpectedError
+import org.walletconnect.walletconnectv2.common.SubscriptionId
+import org.walletconnect.walletconnectv2.common.Topic
+import org.walletconnect.walletconnectv2.common.toRelayPublishRequest
 import org.walletconnect.walletconnectv2.moshi
 import org.walletconnect.walletconnectv2.relay.data.RelayService
 import org.walletconnect.walletconnectv2.relay.data.init.RelayInitParams
-import org.walletconnect.walletconnectv2.relay.data.jsonrpc.JsonRpcError
 import org.walletconnect.walletconnectv2.relay.data.model.Relay
-import org.walletconnect.walletconnectv2.relay.data.model.Request
 import org.walletconnect.walletconnectv2.scope
 import org.walletconnect.walletconnectv2.util.adapters.FlowStreamAdapter
 import org.walletconnect.walletconnectv2.util.generateId
-import timber.log.Timber
-import java.io.IOException
 import java.util.concurrent.TimeUnit
 
 class WakuRelayRepository internal constructor(
@@ -60,28 +50,16 @@ class WakuRelayRepository internal constructor(
     private val relay: RelayService by lazy { scarlet.create(RelayService::class.java) }
     //endregion
 
-    internal val eventsFlow = relay.eventsFlow().shareIn(scope, SharingStarted.Lazily, REPLAY)
-
-    internal val observePublishResponse: Flow<Result<Relay.Publish.Response>> =
-        relay.observePublishResponse()
-            .map { message ->
-
-                Timber.tag("kobe").d("RESULT: $message")
-
-
-                tryDeserialize(Relay.Publish.Response::class.java, message.toString())?.let { response ->
-                    Result.success(response)
-                } ?: tryDeserialize(JsonRpcError::class.java, message.toString())?.let { exception ->
-                    Result.failure(Throwable(exception.error.errorMessage))
-                } ?: Result.failure(UnExpectedError())
-            }
-    internal val observeSubscribeResponse = relay.observeSubscribeResponse()
-    internal val observeUnsubscribeResponse = relay.observeUnsubscribeResponse()
+    internal val eventsFlow: SharedFlow<WebSocket.Event> = relay.eventsFlow().shareIn(scope, SharingStarted.Lazily, REPLAY)
+    internal val observePublishAcknowledgement: Flow<Relay.Publish.Acknowledgement> = relay.observePublishAcknowledgement()
+    internal val observePublishResponseError: Flow<Relay.Publish.JsonRpcError> = relay.observePublishError()
+    internal val observeSubscribeResponse = relay.observeSubscribeAcknowledgement()
+    internal val observeUnsubscribeResponse = relay.observeUnsubscribeAcknowledgement()
 
     internal fun subscriptionRequest(): Flow<Relay.Subscription.Request> =
         relay.observeSubscriptionRequest()
             .map { relayRequest ->
-                supervisorScope { publishSubscriptionResponse(relayRequest.id) }
+                supervisorScope { publishSubscriptionAcknowledgement(relayRequest.id) }
                 relayRequest
             }
 
@@ -107,18 +85,9 @@ class WakuRelayRepository internal constructor(
         relay.unsubscribeRequest(unsubscribeRequest)
     }
 
-    fun <T> trySerialize(typeClass: Class<T>, type: T): String = moshi.adapter(typeClass).toJson(type)
-
-    fun <T> tryDeserialize(type: Class<T>, json: String): T? =
-        try {
-            moshi.adapter(type).fromJson(json)
-        } catch (error: JsonDataException) {
-            null
-        }
-
-    private fun publishSubscriptionResponse(id: Long) {
-        val publishRequest = Relay.Subscription.Response(id = id, result = true)
-        relay.publishSubscriptionResponse(publishRequest)
+    private fun publishSubscriptionAcknowledgement(id: Long) {
+        val publishRequest = Relay.Subscription.Acknowledgement(id = id, result = true)
+        relay.publishSubscriptionAcknowledgement(publishRequest)
     }
 
     private fun getServerUrl(): String =

@@ -42,13 +42,22 @@ sealed class Relay {
             )
         }
 
-        data class Response(
+        data class Acknowledgement(
             @Json(name = "id")
             override val id: Long,
             @Json(name = "jsonrpc")
             override val jsonrpc: String = "2.0",
             @Json(name = "result")
             val result: Boolean
+        ) : Publish()
+
+        data class JsonRpcError(
+            @Json(name = "jsonrpc")
+            override val jsonrpc: String = "2.0",
+            @Json(name = "error")
+            val error: Error,
+            @Json(name = "id")
+            override val id: Long
         ) : Publish()
     }
 
@@ -74,7 +83,7 @@ sealed class Relay {
             )
         }
 
-        data class Response(
+        data class Acknowledgement(
             @Json(name = "id")
             override val id: Long,
             @Json(name = "jsonrpc")
@@ -82,6 +91,15 @@ sealed class Relay {
             @Json(name = "result")
             @field:SubscriptionIdAdapter.Qualifier
             val result: SubscriptionId
+        ) : Subscribe()
+
+        data class JsonRpcError(
+            @Json(name = "jsonrpc")
+            override val jsonrpc: String = "2.0",
+            @Json(name = "error")
+            val error: Error,
+            @Json(name = "id")
+            override val id: Long
         ) : Subscribe()
     }
 
@@ -117,18 +135,27 @@ sealed class Relay {
                     @field:TopicAdapter.Qualifier
                     val topic: Topic,
                     @Json(name = "message")
-                    val message: String // protocol error or success response
+                    val message: String
                 )
             }
         }
 
-        data class Response(
+        data class Acknowledgement(
             @Json(name = "id")
             override val id: Long,
             @Json(name = "jsonrpc")
             override val jsonrpc: String = "2.0",
             @Json(name = "result")
             val result: Boolean
+        ) : Subscription()
+
+        data class JsonRpcError(
+            @Json(name = "jsonrpc")
+            override val jsonrpc: String = "2.0",
+            @Json(name = "error")
+            val error: Error,
+            @Json(name = "id")
+            override val id: Long
         ) : Subscription()
     }
 
@@ -155,7 +182,7 @@ sealed class Relay {
             )
         }
 
-        data class Response(
+        data class Acknowledgement(
             @Json(name = "id")
             override val id: Long,
             @Json(name = "jsonrpc")
@@ -163,5 +190,23 @@ sealed class Relay {
             @Json(name = "result")
             val result: Boolean
         ) : Unsubscribe()
+
+        data class JsonRpcError(
+            @Json(name = "jsonrpc")
+            override val jsonrpc: String = "2.0",
+            @Json(name = "error")
+            val error: Error,
+            @Json(name = "id")
+            override val id: Long
+        ) : Unsubscribe()
+    }
+
+    data class Error(
+        @Json(name = "code")
+        val code: Long,
+        @Json(name = "message")
+        val message: String,
+    ) {
+        val errorMessage: String = "Error code: $code; Error message: $message"
     }
 }

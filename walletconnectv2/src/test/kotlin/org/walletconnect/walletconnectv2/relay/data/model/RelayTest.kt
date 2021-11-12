@@ -94,11 +94,11 @@ internal class RelayTest {
         @Test
         fun `Server sends Relay_Publish_Acknowledgement, should be received by the client`() {
             // Arrange
-            val relayPublishAcknowledgement = Relay.Publish.Response(
+            val relayPublishAcknowledgement = Relay.Publish.Acknowledgement(
                 id = 1,
                 result = true
             )
-            val clientRelayPublishObserver = client.observePublishResponse()
+            val clientRelayPublishObserver = client.observePublishAcknowledgement()
 
             // Act
             server.sendPublishAcknowledgement(relayPublishAcknowledgement)
@@ -145,11 +145,11 @@ internal class RelayTest {
         @Test
         fun `Server sends Relay_Subscribe_Acknowledgement, should be received by the client`() {
             // Arrange
-            val relaySubscribeAcknowledgement = Relay.Subscribe.Response(
+            val relaySubscribeAcknowledgement = Relay.Subscribe.Acknowledgement(
                 id = 1,
                 result = SubscriptionId("SubscriptionId 1")
             )
-            val clientRelaySubscribeObserver = client.observeSubscribeResponse()
+            val clientRelaySubscribeObserver = client.observeSubscribeAcknowledgement()
 
             // Act
             server.sendSubscribeAcknowledgement(relaySubscribeAcknowledgement)
@@ -229,21 +229,21 @@ internal class RelayTest {
         @Test
         fun `Client sends Relay_Subscription_Acknowledgement, should be received by the server`() {
             // Arrange
-            val relaySubscriptionAcknowledgement = Relay.Subscription.Response(
+            val relaySubscriptionAcknowledgement = Relay.Subscription.Acknowledgement(
                 id = 1,
                 result = true
             )
             val serverRelaySubscriptionObserver = server.observeSubscriptionAcknowledgement().test()
 
             // Act
-            client.subscriptionResponse(relaySubscriptionAcknowledgement)
+            client.publishSubscriptionAcknowledgement(relaySubscriptionAcknowledgement)
 
             // Assert
             serverEventObserver.awaitValues(
                 any<WebSocket.Event.OnConnectionOpened<*>>(),
                 any<WebSocket.Event.OnMessageReceived>().containingRelayObject(relaySubscriptionAcknowledgement)
             )
-            serverRelaySubscriptionObserver.awaitValues(any<Relay.Subscription.Response>())
+            serverRelaySubscriptionObserver.awaitValues(any<Relay.Subscription.Acknowledgement>())
         }
     }
 
@@ -278,11 +278,11 @@ internal class RelayTest {
         @Test
         fun `Server sends Relay_Unsubscribe_Acknowledgement, should be received by the client`() {
             // Arrange
-            val relayUnsubscribeAcknowledgement = Relay.Unsubscribe.Response(
+            val relayUnsubscribeAcknowledgement = Relay.Unsubscribe.Acknowledgement(
                 id = 1,
                 result = true
             )
-            val clientRelayUnsubscribeObserver = client.observeUnsubscribeResponse()
+            val clientRelayUnsubscribeObserver = client.observeUnsubscribeAcknowledgement()
 
             // Act
             server.sendUnsubscribeAcknowledgement(relayUnsubscribeAcknowledgement)
@@ -364,25 +364,25 @@ internal class RelayTest {
         fun observeRelayPublish(): Stream<Relay.Publish.Request>
 
         @Send
-        fun sendPublishAcknowledgement(serverAcknowledgement: Relay.Publish.Response)
+        fun sendPublishAcknowledgement(serverAcknowledgement: Relay.Publish.Acknowledgement)
 
         @Receive
         fun observeSubscribePublish(): Stream<Relay.Subscribe.Request>
 
         @Send
-        fun sendSubscribeAcknowledgement(serverAcknowledgement: Relay.Subscribe.Response)
+        fun sendSubscribeAcknowledgement(serverAcknowledgement: Relay.Subscribe.Acknowledgement)
 
         @Send
         fun sendSubscriptionRequest(serverRequest: Relay.Subscription.Request)
 
         @Receive
-        fun observeSubscriptionAcknowledgement(): Stream<Relay.Subscription.Response>
+        fun observeSubscriptionAcknowledgement(): Stream<Relay.Subscription.Acknowledgement>
 
         @Receive
         fun observeUnsubscribePublish(): Stream<Relay.Unsubscribe.Request>
 
         @Send
-        fun sendUnsubscribeAcknowledgement(serverAcknowledgement: Relay.Unsubscribe.Response)
+        fun sendUnsubscribeAcknowledgement(serverAcknowledgement: Relay.Unsubscribe.Acknowledgement)
     }
 
     private inline fun <reified T : Relay> ValueAssert<WebSocket.Event.OnMessageReceived>.containingRelayObject(relayObj: T) = assert {
