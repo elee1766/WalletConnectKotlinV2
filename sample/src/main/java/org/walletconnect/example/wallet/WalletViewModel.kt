@@ -100,6 +100,7 @@ class WalletViewModel : ViewModel(), WalletConnectClientListener {
 
     override fun onSessionDelete(topic: String, reason: String) {
         removeSession(topic)
+        viewModelScope.launch { _eventFlow.emit(UpdateActiveSessions(settledSessions)) }
     }
 
     private fun removeSession(topic: String) {
