@@ -7,9 +7,6 @@ import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.supervisorScope
 import org.json.JSONObject
-import org.walletconnect.walletconnectv2.client.SessionProposal
-import org.walletconnect.walletconnectv2.client.SessionRequest
-import org.walletconnect.walletconnectv2.client.SettledSession
 import org.walletconnect.walletconnectv2.clientsync.pairing.SettledPairingSequence
 import org.walletconnect.walletconnectv2.clientsync.pairing.after.PostSettlementPairing
 import org.walletconnect.walletconnectv2.clientsync.pairing.before.proposal.PairingProposedPermissions
@@ -26,12 +23,11 @@ import org.walletconnect.walletconnectv2.crypto.CryptoManager
 import org.walletconnect.walletconnectv2.crypto.codec.AuthenticatedEncryptionCodec
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
 import org.walletconnect.walletconnectv2.crypto.managers.LazySodiumCryptoManager
+import org.walletconnect.walletconnectv2.engine.model.EngineData
 import org.walletconnect.walletconnectv2.engine.sequence.*
 import org.walletconnect.walletconnectv2.engine.serailising.JsonRpcSerialising
 import org.walletconnect.walletconnectv2.engine.serailising.JsonRpcSerializer
 import org.walletconnect.walletconnectv2.errors.NoSessionDeletePayloadException
-import org.walletconnect.walletconnectv2.engine.model.EngineData
-import org.walletconnect.walletconnectv2.engine.sequence.*
 import org.walletconnect.walletconnectv2.errors.NoSessionProposalException
 import org.walletconnect.walletconnectv2.errors.NoSessionRequestPayloadException
 import org.walletconnect.walletconnectv2.errors.exception
@@ -59,7 +55,7 @@ class EngineInteractor {
     //endregion
 
     private var metaData: AppMetaData? = null
-    private val _sequenceEvent: MutableStateFlow<SequenceLifecycleEvent> = MutableStateFlow(Default)
+    private val _sequenceEvent: MutableStateFlow<SequenceLifecycleEvent> = MutableStateFlow(SequenceLifecycleEvent.Default)
     val sequenceEvent: StateFlow<SequenceLifecycleEvent> = _sequenceEvent
 
     fun initialize(engine: EngineFactory) {
@@ -155,7 +151,9 @@ class EngineInteractor {
         val (sharedKey, selfPublic) = crypto.getKeyAgreement(Topic(proposal.topic))
         val encryptedMessage: String = codec.encrypt(approvalJson, sharedKey, selfPublic)
 
-        with(proposal) { observePublishAcknowledgement(onResult, SettledSession(icon, name, url, settledSession.topic.topicValue)) }
+        with(proposal) {
+            observePublishAcknowledgement(onResult, EngineData.SettledSession(icon, name, url, settledSession.topic.topicValue))
+        }
         observePublishError(onResult)
 
         relayRepository.subscribe(settledSession.topic)
@@ -218,7 +216,7 @@ class EngineInteractor {
             //TODO validate session proposal
             crypto.setEncryptionKeys(sharedKey, selfPublic, proposal.topic)
             val sessionProposal = proposal.toSessionProposal()
-            _sequenceEvent.value = OnSessionProposal(sessionProposal)
+            _sequenceEvent.value = SequenceLifecycleEvent.OnSessionProposal(sessionProposal)
         } ?: throw NoSessionProposalException()
     }
 
@@ -228,7 +226,8 @@ class EngineInteractor {
             val chainId = sessionPayload.params.chainId
             val method = sessionPayload.params.request.method
             //TODO Validate session request + add unmarshaling of generic session request payload to the usable generic object
-            _sequenceEvent.value = OnSessionRequest(SessionRequest(topic.topicValue, request, chainId, method))
+            _sequenceEvent.value =
+                SequenceLifecycleEvent.OnSessionRequest(EngineData.SessionRequest(topic.topicValue, request, chainId, method))
         } ?: throw NoSessionRequestPayloadException()
     }
 
@@ -237,7 +236,7 @@ class EngineInteractor {
             //TODO Add subscriptionId from local storage + Delete all data from local storage coupled with given session
             relayRepository.unsubscribe(topic, SubscriptionId("1"))
             val reason = sessionDelete.message
-            _sequenceEvent.value = OnSessionDeleted(topic.topicValue, reason)
+            _sequenceEvent.value = SequenceLifecycleEvent.OnSessionDeleted(topic.topicValue, reason)
         } ?: throw NoSessionDeletePayloadException()
     }
 

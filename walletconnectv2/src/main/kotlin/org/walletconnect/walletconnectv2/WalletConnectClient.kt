@@ -3,10 +3,14 @@ package org.walletconnect.walletconnectv2
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.walletconnect.walletconnectv2.client.ClientTypes
-import org.walletconnect.walletconnectv2.client.SettledSession
 import org.walletconnect.walletconnectv2.client.WalletConnectClientListener
 import org.walletconnect.walletconnectv2.client.WalletConnectClientListeners
+import org.walletconnect.walletconnectv2.common.toClientSessionProposal
+import org.walletconnect.walletconnectv2.common.toClientSessionRequest
+import org.walletconnect.walletconnectv2.common.toClientSettledSession
+import org.walletconnect.walletconnectv2.common.toEngineSessionProposal
 import org.walletconnect.walletconnectv2.engine.EngineInteractor
+import org.walletconnect.walletconnectv2.engine.model.EngineData
 import org.walletconnect.walletconnectv2.engine.sequence.*
 import timber.log.Timber
 
@@ -24,10 +28,10 @@ object WalletConnectClient {
         scope.launch {
             engineInteractor.sequenceEvent.collect { event ->
                 when (event) {
-                    is OnSessionProposal -> walletConnectListener?.onSessionProposal(event.proposal)
-                    is OnSessionRequest -> walletConnectListener?.onSessionRequest(event.request)
-                    is OnSessionDeleted -> walletConnectListener?.onSessionDelete(event.topic, event.reason)
-                    else -> Unsupported
+                    is SequenceLifecycleEvent.OnSessionProposal -> walletConnectListener?.onSessionProposal(event.proposal.toClientSessionProposal())
+                    is SequenceLifecycleEvent.OnSessionRequest -> walletConnectListener?.onSessionRequest(event.request.toClientSessionRequest())
+                    is SequenceLifecycleEvent.OnSessionDeleted -> walletConnectListener?.onSessionDelete(event.topic, event.reason)
+                    else -> SequenceLifecycleEvent.Unsupported
                 }
             }
         }
@@ -61,9 +65,9 @@ object WalletConnectClient {
         listener: WalletConnectClientListeners.SessionApprove
     ) = with(approveParams) {
         sessionApproveListener = listener
-        engineInteractor.approve(proposal, accounts) { result ->
+        engineInteractor.approve(proposal.toEngineSessionProposal(), accounts) { result ->
             result.fold(
-                onSuccess = { settledSession -> listener.onSuccess(settledSession as SettledSession) },
+                onSuccess = { settledSession -> listener.onSuccess((settledSession as EngineData.SettledSession).toClientSettledSession()) },
                 onFailure = { error -> listener.onError(error) }
             )
         }
