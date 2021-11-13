@@ -12,18 +12,18 @@ sealed interface WalletConnectClientListeners {
     fun onError(error: Throwable)
 
     interface Pairing : WalletConnectClientListeners {
-        fun onSuccess(topic: String)
+        fun onSuccess(settledPairing: WalletConnectClientData.SettledPairing)
     }
 
     interface SessionReject : WalletConnectClientListeners {
-        fun onSuccess(topic: String)
+        fun onSuccess(rejectedSession: WalletConnectClientData.RejectedSession)
     }
 
     interface SessionDelete : WalletConnectClientListeners {
-        fun onSuccess(topic: String)
+        fun onSuccess(deletedSession: WalletConnectClientData.DeletedSession)
     }
 
     interface SessionApprove : WalletConnectClientListeners {
-        fun onSuccess(session: WalletConnectClientData.SettledSession)
+        fun onSuccess(settledSession: WalletConnectClientData.SettledSession)
     }
 }

@@ -31,4 +31,8 @@ sealed class WalletConnectClientData {
         var uri: String = "",
         val topic: String
     ) : WalletConnectClientData()
+
+    data class SettledPairing(val topic: String) : WalletConnectClientData()
+    data class RejectedSession(val topic: String) : WalletConnectClientData()
+    data class DeletedSession(val topic: String) : WalletConnectClientData()
 }

@@ -3,6 +3,7 @@ package org.walletconnect.walletconnectv2
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import org.walletconnect.walletconnectv2.client.ClientTypes
+import org.walletconnect.walletconnectv2.client.WalletConnectClientData
 import org.walletconnect.walletconnectv2.client.WalletConnectClientListener
 import org.walletconnect.walletconnectv2.client.WalletConnectClientListeners
 import org.walletconnect.walletconnectv2.common.toClientSessionProposal
@@ -54,7 +55,7 @@ object WalletConnectClient {
         pairingListener = listener
         engineInteractor.pair(pairingParams.uri) { result ->
             result.fold(
-                onSuccess = { topic -> listener.onSuccess(topic as String) },
+                onSuccess = { topic -> listener.onSuccess(WalletConnectClientData.SettledPairing(topic as String)) },
                 onFailure = { error -> listener.onError(error) }
             )
         }
@@ -80,7 +81,7 @@ object WalletConnectClient {
         sessionRejectListener = listener
         engineInteractor.reject(rejectionReason, proposalTopic) { result ->
             result.fold(
-                onSuccess = { topic -> listener.onSuccess(topic as String) },
+                onSuccess = { topic -> listener.onSuccess(WalletConnectClientData.RejectedSession(topic as String)) },
                 onFailure = { error -> listener.onError(error) }
             )
         }
@@ -93,7 +94,7 @@ object WalletConnectClient {
         sessionDeleteListener = listener
         engineInteractor.disconnect(topic, reason) { result ->
             result.fold(
-                onSuccess = { topic -> listener.onSuccess(topic as String) },
+                onSuccess = { topic -> listener.onSuccess(WalletConnectClientData.DeletedSession(topic as String)) },
                 onFailure = { error -> listener.onError(error) }
             )
         }

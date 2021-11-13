@@ -30,7 +30,7 @@ class WalletViewModel : ViewModel(), WalletConnectClientListener {
         val pairParams = ClientTypes.PairParams(uri.trim())
 
         WalletConnectClient.pair(pairParams, object : WalletConnectClientListeners.Pairing {
-            override fun onSuccess(topic: String) {
+            override fun onSuccess(settledPairing: WalletConnectClientData.SettledPairing) {
                 //Settled pairing
             }
 
@@ -45,8 +45,8 @@ class WalletViewModel : ViewModel(), WalletConnectClientListener {
         val approveParams: ClientTypes.ApproveParams = ClientTypes.ApproveParams(proposal, accounts)
 
         WalletConnectClient.approve(approveParams, object : WalletConnectClientListeners.SessionApprove {
-            override fun onSuccess(session: WalletConnectClientData.SettledSession) {
-                settledSessions += session
+            override fun onSuccess(settledSession: WalletConnectClientData.SettledSession) {
+                settledSessions += settledSession
                 viewModelScope.launch { _eventFlow.emit(UpdateActiveSessions(settledSessions)) }
             }
 
@@ -62,12 +62,12 @@ class WalletViewModel : ViewModel(), WalletConnectClientListener {
         val rejectParams: ClientTypes.RejectParams = ClientTypes.RejectParams(rejectionReason, proposalTopic)
 
         WalletConnectClient.reject(rejectParams, object : WalletConnectClientListeners.SessionReject {
-            override fun onSuccess(topic: String) {
+            override fun onSuccess(rejectedSession: WalletConnectClientData.RejectedSession) {
                 viewModelScope.launch { _eventFlow.emit(RejectSession) }
             }
 
             override fun onError(error: Throwable) {
-                //Proposal rejection error
+                //Reject proposal error
             }
         })
     }
@@ -76,8 +76,8 @@ class WalletViewModel : ViewModel(), WalletConnectClientListener {
         val disconnectParams = ClientTypes.DisconnectParams(topic, reason)
 
         WalletConnectClient.disconnect(disconnectParams, object : WalletConnectClientListeners.SessionDelete {
-            override fun onSuccess(topic: String) {
-                removeSession(topic)
+            override fun onSuccess(deletedSession: WalletConnectClientData.DeletedSession) {
+                removeSession(deletedSession.topic)
                 viewModelScope.launch { _eventFlow.emit(UpdateActiveSessions(settledSessions)) }
             }
 
