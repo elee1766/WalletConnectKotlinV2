@@ -30,6 +30,8 @@ import org.walletconnect.walletconnectv2.engine.sequence.*
 import org.walletconnect.walletconnectv2.engine.serailising.JsonRpcSerialising
 import org.walletconnect.walletconnectv2.engine.serailising.JsonRpcSerializer
 import org.walletconnect.walletconnectv2.errors.NoSessionDeletePayloadException
+import org.walletconnect.walletconnectv2.engine.model.EngineData
+import org.walletconnect.walletconnectv2.engine.sequence.*
 import org.walletconnect.walletconnectv2.errors.NoSessionProposalException
 import org.walletconnect.walletconnectv2.errors.NoSessionRequestPayloadException
 import org.walletconnect.walletconnectv2.errors.exception
@@ -127,7 +129,7 @@ class EngineInteractor {
             .launchIn(scope)
     }
 
-    fun approve(proposal: SessionProposal, accounts: List<String>, onResult: (Result<Any>) -> Unit) {
+    fun approve(proposal: EngineData.SessionProposal, accounts: List<String>, onResult: (Result<Any>) -> Unit) {
         require(::relayRepository.isInitialized)
         val selfPublicKey: PublicKey = crypto.generateKeyPair()
         val peerPublicKey = PublicKey(proposal.proposerPublicKey)

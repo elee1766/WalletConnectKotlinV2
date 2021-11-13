@@ -16,8 +16,8 @@ class WalletViewModel : ViewModel(), WalletConnectClientListener {
     private var _eventFlow = MutableSharedFlow<WalletUiEvent>()
     val eventFlow = _eventFlow.asLiveData()
 
-    val settledSessions: MutableList<SettledSession> = mutableListOf()
-    lateinit var proposal: SessionProposal
+    val settledSessions: MutableList<WalletConnectClientData.SettledSession> = mutableListOf()
+    lateinit var proposal: WalletConnectClientData.SessionProposal
 
     init {
         WalletConnectClient.setWalletConnectListener(this)
@@ -98,5 +98,9 @@ class WalletViewModel : ViewModel(), WalletConnectClientListener {
     override fun onSessionDelete(topic: String, reason: String) {
         settledSessions.removeIf { session -> session.topic == topic }
         viewModelScope.launch { _eventFlow.emit(UpdateActiveSessions(settledSessions)) }
+    }
+
+    private fun removeSession(topic: String) {
+        settledSessions.find { session -> session.topic == topic }?.also { session -> settledSessions.remove(session) }
     }
 }
