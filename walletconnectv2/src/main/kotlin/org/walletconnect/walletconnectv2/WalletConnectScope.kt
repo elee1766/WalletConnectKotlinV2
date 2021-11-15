@@ -15,7 +15,6 @@ import org.walletconnect.walletconnectv2.common.SubscriptionId
 import org.walletconnect.walletconnectv2.common.Topic
 import org.walletconnect.walletconnectv2.common.Ttl
 import org.walletconnect.walletconnectv2.common.network.adapters.*
-import org.walletconnect.walletconnectv2.crypto.KeyChain
 import timber.log.Timber
 
 //TODO add job cancellation to avoid memory leaks
@@ -24,19 +23,6 @@ internal val scope = CoroutineScope(job + Dispatchers.IO)
 
 internal val exceptionHandler = CoroutineExceptionHandler { _, exception ->
     Timber.tag("WalletConnect exception").e(exception)
-}
-
-//TODO provide with DI
-internal val keyChain = object : KeyChain {
-    val mapOfKeys = mutableMapOf<String, String>()
-
-    override fun setKey(key: String, value: String) {
-        mapOfKeys[key] = value
-    }
-
-    override fun getKey(key: String): String {
-        return mapOfKeys[key]!!
-    }
 }
 
 val moshi: Moshi = Moshi.Builder()

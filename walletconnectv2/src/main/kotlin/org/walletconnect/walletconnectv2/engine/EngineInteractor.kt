@@ -22,9 +22,10 @@ import org.walletconnect.walletconnectv2.common.*
 import org.walletconnect.walletconnectv2.crypto.CryptoManager
 import org.walletconnect.walletconnectv2.crypto.codec.AuthenticatedEncryptionCodec
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
+import org.walletconnect.walletconnectv2.crypto.data.SharedKey
 import org.walletconnect.walletconnectv2.crypto.managers.LazySodiumCryptoManager
 import org.walletconnect.walletconnectv2.engine.model.EngineData
-import org.walletconnect.walletconnectv2.engine.sequence.*
+import org.walletconnect.walletconnectv2.engine.sequence.SequenceLifecycleEvent
 import org.walletconnect.walletconnectv2.engine.serailising.JsonRpcSerialising
 import org.walletconnect.walletconnectv2.engine.serailising.JsonRpcSerializer
 import org.walletconnect.walletconnectv2.errors.NoSessionDeletePayloadException
@@ -32,7 +33,6 @@ import org.walletconnect.walletconnectv2.errors.NoSessionProposalException
 import org.walletconnect.walletconnectv2.errors.NoSessionRequestPayloadException
 import org.walletconnect.walletconnectv2.errors.exception
 import org.walletconnect.walletconnectv2.exceptionHandler
-import org.walletconnect.walletconnectv2.keyChain
 import org.walletconnect.walletconnectv2.moshi
 import org.walletconnect.walletconnectv2.relay.WakuRelayRepository
 import org.walletconnect.walletconnectv2.relay.data.jsonrpc.JsonRpcMethod.WC_PAIRING_PAYLOAD
@@ -50,7 +50,9 @@ class EngineInteractor {
     // TODO: add logic to check hostName for ws/wss scheme with and without ://
     private lateinit var relayRepository: WakuRelayRepository
     private val codec: AuthenticatedEncryptionCodec = AuthenticatedEncryptionCodec()
-    private val crypto: CryptoManager = LazySodiumCryptoManager(keyChain)
+
+    //    private val keyChain: KeyStore = KeyChain()
+    private val crypto: CryptoManager = LazySodiumCryptoManager()
     private val jsonRpcSerializer: JsonRpcSerialising = JsonRpcSerializer(moshi)
     //endregion
 
@@ -210,7 +212,7 @@ class EngineInteractor {
         }
     }
 
-    private fun onPairingPayload(json: String, sharedKey: String, selfPublic: PublicKey) {
+    private fun onPairingPayload(json: String, sharedKey: SharedKey, selfPublic: PublicKey) {
         jsonRpcSerializer.tryDeserialize(PostSettlementPairing.PairingPayload::class.java, json)?.let { pairingPayload ->
             val proposal = pairingPayload.payloadParams
             //TODO validate session proposal

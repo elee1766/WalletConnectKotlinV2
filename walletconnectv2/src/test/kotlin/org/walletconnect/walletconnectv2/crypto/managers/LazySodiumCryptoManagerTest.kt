@@ -2,35 +2,38 @@ package org.walletconnect.walletconnectv2.crypto.managers
 
 import com.goterl.lazysodium.utils.HexMessageEncoder
 import com.goterl.lazysodium.utils.Key
+import io.mockk.mockk
 import io.mockk.spyk
 import io.mockk.verify
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.walletconnect.walletconnectv2.common.Topic
-import org.walletconnect.walletconnectv2.crypto.KeyChain
 import org.walletconnect.walletconnectv2.crypto.data.PrivateKey
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
+import org.walletconnect.walletconnectv2.storage.KeyChain
 import kotlin.test.assertContentEquals
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 
 internal class LazySodiumCryptoManagerTest {
-    private val privateKeyString =
-        "BCA8EF78C5D69A3681E87A0630E16AC374B6ED612EDAB1BD26F02C4B2499851E"
+    private val privateKeyString = "BCA8EF78C5D69A3681E87A0630E16AC374B6ED612EDAB1BD26F02C4B2499851E"
     private val publicKeyString = "DC22D30CFB89E30A356BA86EE48F66F1722C9B32CC9C0666A47748376BEC177D"
     private val privateKey = PrivateKey(privateKeyString)
     private val publicKey = PublicKey(publicKeyString)
-    private val keyChain = object : KeyChain {
-        val mapOfKeys = mutableMapOf<String, String>()
+    private val keyChain: KeyChain = mockk()
 
-        override fun setKey(key: String, value: String) {
-            mapOfKeys[key] = value
-        }
+//    private val keyChain = object : KeyStore {
+//        val mapOfKeys = mutableMapOf<String, String>()
+//
+//        override fun setKey(key: String, value: String) {
+//            mapOfKeys[key] = value
+//        }
+//
+//        override fun getKey(key: String): String {
+//            return mapOfKeys[key]!!
+//        }
+//    }
 
-        override fun getKey(key: String): String {
-            return mapOfKeys[key]!!
-        }
-    }
     private val sut = spyk(LazySodiumCryptoManager(keyChain), recordPrivateCalls = true)
 
     @BeforeEach
