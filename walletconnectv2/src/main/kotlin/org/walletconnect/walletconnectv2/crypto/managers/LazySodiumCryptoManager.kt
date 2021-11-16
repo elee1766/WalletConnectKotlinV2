@@ -20,20 +20,13 @@ import org.walletconnect.walletconnectv2.crypto.data.Key as WCKey
 class LazySodiumCryptoManager(private val keyChain: KeyStore = KeyChain(sharedPreferences)) : CryptoManager {
     private val lazySodium = LazySodiumAndroid(SodiumAndroid())
 
-    init {
-//        val (a, b) = keyChain.getKeys("862f46d94296f9279034826f53e47ccce95d60d80e5139cf92f4e28ed0d398c5")
-//        Timber.tag("kobe").d("Get keys: $a, $b")
-    }
-
     override fun generateKeyPair(): PublicKey {
         val lsKeyPair = lazySodium.cryptoSignKeypair()
         val curve25519KeyPair = lazySodium.convertKeyPairEd25519ToCurve25519(lsKeyPair)
         val (publicKey, privateKey) = curve25519KeyPair.let { keyPair ->
             PublicKey(keyPair.publicKey.asHexString.lowercase()) to PrivateKey(keyPair.secretKey.asHexString.lowercase())
         }
-
         setKeyPair(publicKey, privateKey)
-
         return publicKey
     }
 
@@ -42,9 +35,7 @@ class LazySodiumCryptoManager(private val keyChain: KeyStore = KeyChain(sharedPr
         val sharedKeyHex = lazySodium.cryptoScalarMult(privateKey.toKey(), peer.toKey()).asHexString.lowercase()
         val sharedKey = SharedKey(sharedKeyHex)
         val topic = generateTopic(sharedKey.keyAsHex)
-
-        setEncryptionKeys(sharedKey, publicKey, Topic(topic.topicValue))
-
+        setEncryptionKeys(sharedKey, publicKey, Topic(topic.topicValue.lowercase()))
         return Pair(sharedKey, topic)
     }
 
@@ -57,9 +48,11 @@ class LazySodiumCryptoManager(private val keyChain: KeyStore = KeyChain(sharedPr
     }
 
     override fun removeKeys(tag: String) {
-        //todo add delete the saved private key from public key
-
-        keyChain.deleteKeys(tag)
+        val (_, publicKey) = keyChain.getKeys(tag)
+        with(keyChain) {
+            deleteKeys(publicKey.lowercase())
+            deleteKeys(tag)
+        }
     }
 
     override fun getKeyAgreement(topic: Topic): Pair<SharedKey, PublicKey> {
@@ -68,8 +61,6 @@ class LazySodiumCryptoManager(private val keyChain: KeyStore = KeyChain(sharedPr
     }
 
     fun setKeyPair(publicKey: PublicKey, privateKey: PrivateKey) {
-
-        Timber.tag("kobe").d("PublicKey topic: ${publicKey.keyAsHex}")
         keyChain.setKey(publicKey.keyAsHex, publicKey, privateKey)
     }
 

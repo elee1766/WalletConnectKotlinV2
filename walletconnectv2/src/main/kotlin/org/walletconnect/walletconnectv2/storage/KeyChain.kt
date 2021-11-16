@@ -23,10 +23,6 @@ class KeyChain(private val sharedPreferences: SharedPreferences) : KeyStore {
     }
 
     override fun deleteKeys(tag: String) {
-
-        //TODO get public key under the topic and delete private key for given session
-        //TODO delete the shared key with public key
-
         with(sharedPreferences.edit()) {
             remove(tag)
             commit()
