@@ -17,8 +17,10 @@ import timber.log.Timber
 import java.security.MessageDigest
 import org.walletconnect.walletconnectv2.crypto.data.Key as WCKey
 
-class LazySodiumCryptoManager(private val keyChain: KeyStore = KeyChain(sharedPreferences)) : CryptoManager {
-    private val lazySodium = LazySodiumAndroid(SodiumAndroid())
+class LazySodiumCryptoManager(
+    private val keyChain: KeyStore = KeyChain(sharedPreferences),
+    private val lazySodium: LazySodiumAndroid = LazySodiumAndroid(SodiumAndroid())
+) : CryptoManager {
 
     override fun generateKeyPair(): PublicKey {
         val lsKeyPair = lazySodium.cryptoSignKeypair()

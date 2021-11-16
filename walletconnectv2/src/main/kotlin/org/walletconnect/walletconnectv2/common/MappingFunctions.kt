@@ -19,7 +19,7 @@ import org.walletconnect.walletconnectv2.relay.data.model.Relay
 import java.net.URI
 import kotlin.time.Duration
 
-internal fun String.toPairProposal(): Pairing.Proposal {
+fun String.toPairProposal(): Pairing.Proposal {
     val properUriString = if (contains("wc://")) this else replace("wc:", "wc://")
     val pairUri = URI(properUriString)
     val mapOfQueryParameters: Map<String, String> =
@@ -40,7 +40,7 @@ internal fun String.toPairProposal(): Pairing.Proposal {
     )
 }
 
-internal fun Pairing.Proposal.toPairingSuccess(settleTopic: Topic, expiry: Expiry, selfPublicKey: PublicKey): Pairing.Success {
+fun Pairing.Proposal.toPairingSuccess(settleTopic: Topic, expiry: Expiry, selfPublicKey: PublicKey): Pairing.Success {
     return Pairing.Success(
         settledTopic = settleTopic, relay = relay,
         responder = PairingParticipant(publicKey = selfPublicKey.keyAsHex),
@@ -49,14 +49,14 @@ internal fun Pairing.Proposal.toPairingSuccess(settleTopic: Topic, expiry: Expir
     )
 }
 
-internal fun Pairing.Proposal.toApprove(
+fun Pairing.Proposal.toApprove(
     id: Long,
     settleTopic: Topic,
     expiry: Expiry,
     selfPublicKey: PublicKey
 ): PreSettlementPairing.Approve = PreSettlementPairing.Approve(id = id, params = this.toPairingSuccess(settleTopic, expiry, selfPublicKey))
 
-internal fun PreSettlementPairing.Approve.toRelayPublishRequest(
+fun PreSettlementPairing.Approve.toRelayPublishRequest(
     id: Long,
     topic: Topic,
     moshi: Moshi

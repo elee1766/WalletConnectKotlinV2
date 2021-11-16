@@ -8,25 +8,17 @@ import org.walletconnect.walletconnectv2.util.empty
 class KeyChain(private val sharedPreferences: SharedPreferences) : KeyStore {
 
     override fun setKey(tag: String, key1: Key, key2: Key) {
-        with(sharedPreferences.edit()) {
-            val keys = concatKeys(key1, key2)
-            putString(tag, keys)
-            commit()
-        }
+        val keys = concatKeys(key1, key2)
+        sharedPreferences.edit().putString(tag, keys).apply()
     }
 
     override fun getKeys(tag: String): Pair<String, String> {
-        with(sharedPreferences) {
-            val concatKeys = getString(tag, String.empty) ?: String.empty
-            return splitKeys(concatKeys)
-        }
+        val concatKeys = sharedPreferences.getString(tag, String.empty) ?: String.empty
+        return splitKeys(concatKeys)
     }
 
     override fun deleteKeys(tag: String) {
-        with(sharedPreferences.edit()) {
-            remove(tag)
-            commit()
-        }
+        sharedPreferences.edit().remove(tag).apply()
     }
 
     private fun concatKeys(keyA: Key, keyB: Key): String = with(HexMessageEncoder()) {
