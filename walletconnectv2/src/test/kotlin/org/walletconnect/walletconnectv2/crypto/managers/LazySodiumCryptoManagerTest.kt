@@ -70,7 +70,7 @@ internal class LazySodiumCryptoManagerTest {
 
         assertEquals(
             sut.concatKeys(sharedKey, publicKey),
-            keyChain.getKey(Topic("topic").topicValue)
+            keyChain.getKeys(Topic("topic").topicValue)
         )
     }
 

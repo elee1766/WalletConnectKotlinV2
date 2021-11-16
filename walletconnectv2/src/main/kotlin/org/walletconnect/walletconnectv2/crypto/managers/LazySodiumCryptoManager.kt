@@ -2,7 +2,6 @@ package org.walletconnect.walletconnectv2.crypto.managers
 
 import com.goterl.lazysodium.LazySodiumAndroid
 import com.goterl.lazysodium.SodiumAndroid
-import com.goterl.lazysodium.utils.HexMessageEncoder
 import com.goterl.lazysodium.utils.Key
 import org.walletconnect.walletconnectv2.common.Topic
 import org.walletconnect.walletconnectv2.crypto.CryptoManager
@@ -10,17 +9,20 @@ import org.walletconnect.walletconnectv2.storage.KeyStore
 import org.walletconnect.walletconnectv2.crypto.data.PrivateKey
 import org.walletconnect.walletconnectv2.crypto.data.PublicKey
 import org.walletconnect.walletconnectv2.crypto.data.SharedKey
+import org.walletconnect.walletconnectv2.sharedPreferences
 import org.walletconnect.walletconnectv2.storage.KeyChain
 import org.walletconnect.walletconnectv2.util.bytesToHex
 import org.walletconnect.walletconnectv2.util.hexToBytes
+import timber.log.Timber
 import java.security.MessageDigest
 import org.walletconnect.walletconnectv2.crypto.data.Key as WCKey
 
-class LazySodiumCryptoManager(private val keyChain: KeyStore = KeyChain()) : CryptoManager {
+class LazySodiumCryptoManager(private val keyChain: KeyStore = KeyChain(sharedPreferences)) : CryptoManager {
     private val lazySodium = LazySodiumAndroid(SodiumAndroid())
 
-    override fun hasKeys(tag: String): Boolean {
-        return keyChain.getKey(tag).keyAsHex.isNotBlank()
+    init {
+//        val (a, b) = keyChain.getKeys("862f46d94296f9279034826f53e47ccce95d60d80e5139cf92f4e28ed0d398c5")
+//        Timber.tag("kobe").d("Get keys: $a, $b")
     }
 
     override fun generateKeyPair(): PublicKey {
@@ -29,20 +31,20 @@ class LazySodiumCryptoManager(private val keyChain: KeyStore = KeyChain()) : Cry
         val (publicKey, privateKey) = curve25519KeyPair.let { keyPair ->
             PublicKey(keyPair.publicKey.asHexString.lowercase()) to PrivateKey(keyPair.secretKey.asHexString.lowercase())
         }
+
         setKeyPair(publicKey, privateKey)
+
         return publicKey
     }
 
-    override fun generateTopicAndSharedKey(
-        self: PublicKey,
-        peer: PublicKey,
-        overrideTopic: String?
-    ): Pair<SharedKey, Topic> {
+    override fun generateTopicAndSharedKey(self: PublicKey, peer: PublicKey): Pair<SharedKey, Topic> {
         val (publicKey, privateKey) = getKeyPair(self)
         val sharedKeyHex = lazySodium.cryptoScalarMult(privateKey.toKey(), peer.toKey()).asHexString.lowercase()
         val sharedKey = SharedKey(sharedKeyHex)
         val topic = generateTopic(sharedKey.keyAsHex)
-        setEncryptionKeys(sharedKey, publicKey, Topic(overrideTopic ?: topic.topicValue))
+
+        setEncryptionKeys(sharedKey, publicKey, Topic(topic.topicValue))
+
         return Pair(sharedKey, topic)
     }
 
@@ -50,39 +52,30 @@ class LazySodiumCryptoManager(private val keyChain: KeyStore = KeyChain()) : Cry
         val sharedKeyObject = object : WCKey {
             override val keyAsHex: String = sharedKey.keyAsHex
         }
-        val keys = concatKeys(sharedKeyObject, publicKey)
-        keyChain.setKey(topic.topicValue, keys)
+
+        keyChain.setKey(topic.topicValue, sharedKeyObject, publicKey)
+    }
+
+    override fun removeKeys(tag: String) {
+        //todo add delete the saved private key from public key
+
+        keyChain.deleteKeys(tag)
     }
 
     override fun getKeyAgreement(topic: Topic): Pair<SharedKey, PublicKey> {
-        val storageKey: String = keyChain.getKey(topic.topicValue).keyAsHex
-        val (sharedKey, peerPublic) = splitKeys(storageKey)
+        val (sharedKey, peerPublic) = keyChain.getKeys(topic.topicValue)
         return Pair(SharedKey(sharedKey), PublicKey(peerPublic))
     }
 
     fun setKeyPair(publicKey: PublicKey, privateKey: PrivateKey) {
-        val keys = concatKeys(publicKey, privateKey)
-        keyChain.setKey(publicKey.keyAsHex, keys)
+
+        Timber.tag("kobe").d("PublicKey topic: ${publicKey.keyAsHex}")
+        keyChain.setKey(publicKey.keyAsHex, publicKey, privateKey)
     }
 
     fun getKeyPair(wcKey: WCKey): Pair<PublicKey, PrivateKey> {
-        val storageKey: String = keyChain.getKey(wcKey.keyAsHex).keyAsHex
-        val (publicKey, privateKey) = splitKeys(storageKey)
+        val (publicKey, privateKey) = keyChain.getKeys(wcKey.keyAsHex)
         return Pair(PublicKey(publicKey), PrivateKey(privateKey))
-    }
-
-    fun concatKeys(keyA: WCKey, keyB: WCKey): String = with(HexMessageEncoder()) {
-        encode(decode(keyA.keyAsHex) + decode(keyB.keyAsHex))
-    }
-
-    fun splitKeys(concatKeys: String): Pair<String, String> {
-        val hexEncoder = HexMessageEncoder()
-        val concatKeysByteArray = hexEncoder.decode(concatKeys)
-        val privateKeyByteArray =
-            concatKeysByteArray.sliceArray(0 until (concatKeysByteArray.size / 2))
-        val publicKeyByteArray =
-            concatKeysByteArray.sliceArray((concatKeysByteArray.size / 2) until concatKeysByteArray.size)
-        return hexEncoder.encode(privateKeyByteArray) to hexEncoder.encode(publicKeyByteArray)
     }
 
     private fun generateTopic(sharedKey: String): Topic {

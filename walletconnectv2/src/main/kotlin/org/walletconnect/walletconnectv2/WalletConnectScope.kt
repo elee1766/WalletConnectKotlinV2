@@ -2,6 +2,10 @@
 
 package org.walletconnect.walletconnectv2
 
+import android.app.Application
+import android.content.SharedPreferences
+import androidx.security.crypto.EncryptedSharedPreferences
+import androidx.security.crypto.MasterKeys
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import com.tinder.scarlet.utils.getRawType
@@ -18,6 +22,7 @@ import org.walletconnect.walletconnectv2.common.network.adapters.*
 import timber.log.Timber
 
 //TODO add job cancellation to avoid memory leaks
+internal var app: Application? = null
 private val job = SupervisorJob()
 internal val scope = CoroutineScope(job + Dispatchers.IO)
 
@@ -25,7 +30,8 @@ internal val exceptionHandler = CoroutineExceptionHandler { _, exception ->
     Timber.tag("WalletConnect exception").e(exception)
 }
 
-val moshi: Moshi = Moshi.Builder()
+//TODO move to the DI framework
+internal val moshi: Moshi = Moshi.Builder()
     .addLast { type, _, _ ->
         when (type.getRawType().name) {
             Expiry::class.qualifiedName -> ExpiryAdapter
@@ -38,3 +44,18 @@ val moshi: Moshi = Moshi.Builder()
     }
     .addLast(KotlinJsonAdapterFactory())
     .build()
+
+//TODO move to the DI framework
+private val keyGenParameterSpec = MasterKeys.AES256_GCM_SPEC
+private val mainKeyAlias = MasterKeys.getOrCreate(keyGenParameterSpec)
+private const val sharedPrefsFile: String = "wc_key_store"
+
+internal val sharedPreferences: SharedPreferences
+    get() =
+        EncryptedSharedPreferences.create(
+            sharedPrefsFile,
+            mainKeyAlias,
+            app!!.applicationContext,
+            EncryptedSharedPreferences.PrefKeyEncryptionScheme.AES256_SIV,
+            EncryptedSharedPreferences.PrefValueEncryptionScheme.AES256_GCM
+        )

@@ -15,7 +15,7 @@ android {
     compileSdk = 30
 
     defaultConfig {
-        minSdk = 21
+        minSdk = 23
         targetSdk = 30
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -56,6 +56,7 @@ dependencies {
     coroutines()
     moshi()
     scarlet()
+    security()
     jUnit5()
     mockk()
     timber()
