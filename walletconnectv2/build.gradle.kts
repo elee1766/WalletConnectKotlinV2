@@ -18,8 +18,7 @@ android {
         minSdk = 21
         targetSdk = 30
 
-        testInstrumentationRunner = "org.walletconnect.walletconnectv2.WCTestRunner"
-        testInstrumentationRunnerArguments += mutableMapOf("runnerBuilder" to "de.mannodermaus.junit5.AndroidJUnit5Builder")
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 
     buildTypes {
@@ -35,20 +34,8 @@ android {
         sourceCompatibility = jvmVersion
         targetCompatibility = jvmVersion
     }
-
     kotlinOptions {
         jvmTarget = jvmVersion.toString()
-    }
-
-    testOptions.unitTests.isIncludeAndroidResources = true
-
-    packagingOptions {
-        resources.excludes += setOf(
-            "META-INF/LICENSE.md",
-            "META-INF/LICENSE-notice.md",
-            "META-INF/AL2.0",
-            "META-INF/LGPL2.1"
-        )
     }
 }
 
@@ -69,9 +56,7 @@ dependencies {
     coroutines()
     moshi()
     scarlet()
-
     jUnit5()
-    robolectric()
     mockk()
     timber()
 }
