@@ -17,21 +17,9 @@ import timber.log.Timber
 
 object WalletConnectClient {
     private val engineInteractor = EngineInteractor()
-    private var walletConnectListener: WalletConnectClientListener? = null
 
     init {
         Timber.plant(Timber.DebugTree())
-
-        scope.launch {
-            engineInteractor.sequenceEvent.collect { event ->
-                when (event) {
-                    is SequenceLifecycleEvent.OnSessionProposal -> walletConnectListener?.onSessionProposal(event.proposal.toClientSessionProposal())
-                    is SequenceLifecycleEvent.OnSessionRequest -> walletConnectListener?.onSessionRequest(event.request.toClientSessionRequest())
-                    is SequenceLifecycleEvent.OnSessionDeleted -> walletConnectListener?.onSessionDelete(event.topic, event.reason)
-                    else -> SequenceLifecycleEvent.Unsupported
-                }
-            }
-        }
     }
 
     fun initialize(initialParams: ClientTypes.InitialParams) = with(initialParams) {
@@ -41,7 +29,15 @@ object WalletConnectClient {
     }
 
     fun setWalletConnectListener(walletConnectListener: WalletConnectClientListener) {
-        this.walletConnectListener = walletConnectListener
+        scope.launch {
+            engineInteractor.sequenceEvent.collect { event ->
+                when (event) {
+                    is SequenceLifecycleEvent.OnSessionProposal -> walletConnectListener.onSessionProposal(event.proposal.toClientSessionProposal())
+                    is SequenceLifecycleEvent.OnSessionRequest -> walletConnectListener.onSessionRequest(event.request.toClientSessionRequest())
+                    is SequenceLifecycleEvent.OnSessionDeleted -> walletConnectListener.onSessionDelete(event.topic, event.reason)
+                }
+            }
+        }
     }
 
     fun pair(
