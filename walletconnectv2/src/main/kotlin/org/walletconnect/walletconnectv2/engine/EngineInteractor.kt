@@ -80,7 +80,7 @@ class EngineInteractor {
         }
 
         scope.launch(exceptionHandler) {
-            relayRepository.subscriptionRequest.collect { relayRequest ->
+            relayRepository.subscriptionRequest().collect { relayRequest ->
                 val topic: Topic = relayRequest.subscriptionTopic
                 val (sharedKey, selfPublic) = crypto.getKeyAgreement(topic)
                 val encryptionPayload = relayRequest.encryptionPayload
@@ -93,7 +93,7 @@ class EngineInteractor {
                         else -> onUnsupported(rpc)
                     }
                 } ?: jsonRpcSerializer.tryDeserialize(Relay.Subscription.JsonRpcError::class.java, message)?.let { exception ->
-                    Timber.tag("WalletConnect exception").e(exception.error.errorMessage)
+                    Logger.error(exception.error.errorMessage)
                 }
             }
         }
@@ -196,7 +196,7 @@ class EngineInteractor {
     private fun observePublishError(onResult: (Result<String>) -> Unit) {
         scope.launch {
             relayRepository.observePublishResponseError
-                .catch { exception -> Timber.tag("WalletConnect exception").e(exception) }
+                .catch { exception -> Logger.error(exception) }
                 .collect { errorResponse ->
                     onResult(Result.failure(Throwable(errorResponse.error.errorMessage)))
                     cancel()
@@ -207,7 +207,7 @@ class EngineInteractor {
     private fun observePublishAcknowledgement(onResult: (Result<Any>) -> Unit, result: Any) {
         scope.launch {
             relayRepository.observePublishAcknowledgement
-                .catch { exception -> Timber.tag("WalletConnect exception").e(exception) }
+                .catch { exception -> Logger.error(exception) }
                 .collect {
                     onResult(Result.success(result))
                     cancel()

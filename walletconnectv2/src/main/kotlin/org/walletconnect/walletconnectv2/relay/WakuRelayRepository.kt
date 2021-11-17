@@ -63,9 +63,7 @@ class WakuRelayRepository internal constructor(
 
     internal fun subscriptionRequest(): Flow<Relay.Subscription.Request> =
         relay.observeSubscriptionRequest()
-            .onEach { relayRequest ->
-                supervisorScope { publishSubscriptionAcknowledgement(relayRequest.id) }
-            }
+            .onEach { relayRequest -> supervisorScope { publishSubscriptionAcknowledgement(relayRequest.id) } }
 
     fun publishPairingApproval(topic: Topic, preSettlementPairingApproval: PreSettlementPairing.Approve) {
         val publishRequest = preSettlementPairingApproval.toRelayPublishRequest(generateId(), topic, moshi)
