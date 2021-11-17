@@ -42,8 +42,8 @@ import org.walletconnect.walletconnectv2.relay.data.jsonrpc.JsonRpcMethod.WC_SES
 import org.walletconnect.walletconnectv2.relay.data.model.Relay
 import org.walletconnect.walletconnectv2.relay.data.model.Request
 import org.walletconnect.walletconnectv2.scope
+import org.walletconnect.walletconnectv2.util.Logger
 import org.walletconnect.walletconnectv2.util.generateId
-import timber.log.Timber
 import java.util.*
 
 class EngineInteractor {
@@ -59,6 +59,8 @@ class EngineInteractor {
     private val _sequenceEvent: MutableStateFlow<SequenceLifecycleEvent> = MutableStateFlow(SequenceLifecycleEvent.Default)
     val sequenceEvent: StateFlow<SequenceLifecycleEvent> = _sequenceEvent
 
+    private var isConnected = MutableStateFlow(false) // TODO: Maybe replace with an enum
+
     fun initialize(engine: EngineFactory) {
         this.metaData = engine.metaData
         crypto = LazySodiumCryptoManager()
@@ -66,13 +68,19 @@ class EngineInteractor {
 
         scope.launch(exceptionHandler) {
             relayRepository.eventsFlow
-                .onEach { Timber.tag("WalletConnect connection event").d("$it") }
+                .onEach { websocketEvent: WebSocket.Event ->
+                    Logger.log("$websocketEvent")
+
+                    if (websocketEvent is WebSocket.Event.OnConnectionOpened<*>) {
+                        isConnected.compareAndSet(expect = false, update = true)
+                    }
+                }
                 .filterIsInstance<WebSocket.Event.OnConnectionFailed>()
                 .collect { event -> throw event.throwable.exception }
         }
 
         scope.launch(exceptionHandler) {
-            relayRepository.subscriptionRequest().collect { relayRequest ->
+            relayRepository.subscriptionRequest.collect { relayRequest ->
                 val topic: Topic = relayRequest.subscriptionTopic
                 val (sharedKey, selfPublic) = crypto.getKeyAgreement(topic)
                 val encryptionPayload = relayRequest.encryptionPayload
@@ -172,6 +180,7 @@ class EngineInteractor {
 
     fun disconnect(topic: String, reason: String, onResult: (Result<Any>) -> Unit) {
         require(::relayRepository.isInitialized)
+
         val sessionDelete = PostSettlementSession.SessionDelete(id = generateId(), params = Session.DeleteParams(Reason(message = reason)))
         val json = jsonRpcSerializer.trySerialize(PostSettlementSession.SessionDelete::class.java, sessionDelete)
         val (sharedKey, selfPublic) = crypto.getKeyAgreement(Topic(topic))
@@ -239,7 +248,7 @@ class EngineInteractor {
 
 
     private fun onUnsupported(rpc: String?) {
-        Timber.tag("WalletConnect unsupported RPC").e(rpc)
+        Logger.error(rpc)
     }
 
     private fun settlePairingSequence(
@@ -250,7 +259,6 @@ class EngineInteractor {
         controllerPublicKey: PublicKey,
         expiry: Expiry
     ): SettledPairingSequence {
-        //Setting keys on topic B
         val (_, settledTopic) = crypto.generateTopicAndSharedKey(selfPublicKey, peerPublicKey)
         return SettledPairingSequence(
             settledTopic,
@@ -281,7 +289,7 @@ class EngineInteractor {
         )
     }
 
-    data class EngineFactory(
+    class EngineFactory(
         val useTLs: Boolean = false,
         val hostName: String,
         val apiKey: String,

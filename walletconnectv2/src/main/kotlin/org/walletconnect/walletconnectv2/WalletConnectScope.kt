@@ -20,6 +20,8 @@ import org.walletconnect.walletconnectv2.common.Topic
 import org.walletconnect.walletconnectv2.common.Ttl
 import org.walletconnect.walletconnectv2.common.network.adapters.*
 import timber.log.Timber
+import org.walletconnect.walletconnectv2.crypto.KeyChain
+import org.walletconnect.walletconnectv2.util.Logger
 
 //TODO add job cancellation to avoid memory leaks
 internal var app: Application? = null
@@ -27,7 +29,7 @@ private val job = SupervisorJob()
 internal val scope = CoroutineScope(job + Dispatchers.IO)
 
 internal val exceptionHandler = CoroutineExceptionHandler { _, exception ->
-    Timber.tag("WalletConnect exception").e(exception)
+    Logger.error(exception)
 }
 
 //TODO move to the DI framework

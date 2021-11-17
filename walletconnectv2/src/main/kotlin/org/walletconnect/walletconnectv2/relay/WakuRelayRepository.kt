@@ -8,6 +8,10 @@ import com.tinder.scarlet.messageadapter.moshi.MoshiMessageAdapter
 import com.tinder.scarlet.retry.LinearBackoffStrategy
 import com.tinder.scarlet.websocket.okhttp.newWebSocketFactory
 import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.shareIn
 import kotlinx.coroutines.supervisorScope
 import okhttp3.OkHttpClient
 import org.walletconnect.walletconnectv2.clientsync.pairing.before.PreSettlementPairing
@@ -16,8 +20,9 @@ import org.walletconnect.walletconnectv2.common.Topic
 import org.walletconnect.walletconnectv2.common.toRelayPublishRequest
 import org.walletconnect.walletconnectv2.moshi
 import org.walletconnect.walletconnectv2.relay.data.RelayService
-import org.walletconnect.walletconnectv2.relay.data.init.RelayInitParams
 import org.walletconnect.walletconnectv2.relay.data.model.Relay
+import org.walletconnect.walletconnectv2.scope
+import org.walletconnect.walletconnectv2.relay.data.model.Request
 import org.walletconnect.walletconnectv2.scope
 import org.walletconnect.walletconnectv2.util.adapters.FlowStreamAdapter
 import org.walletconnect.walletconnectv2.util.generateId
@@ -42,7 +47,7 @@ class WakuRelayRepository internal constructor(
         Scarlet.Builder()
             .backoffStrategy(LinearBackoffStrategy(TimeUnit.MINUTES.toMillis(DEFAULT_BACKOFF_MINUTES)))
             .webSocketFactory(okHttpClient.newWebSocketFactory(getServerUrl()))
-            .lifecycle(AndroidLifecycle.ofApplicationForeground(application))
+            .lifecycle(AndroidLifecycle.ofApplicationForeground(application)) // TODO: Maybe have debug version of scarlet w/o application and release version of scarlet w/ application once DI is setup
             .addMessageAdapterFactory(MoshiMessageAdapter.Factory(moshi))
             .addStreamAdapterFactory(FlowStreamAdapter.Factory())
             .build()
@@ -58,9 +63,8 @@ class WakuRelayRepository internal constructor(
 
     internal fun subscriptionRequest(): Flow<Relay.Subscription.Request> =
         relay.observeSubscriptionRequest()
-            .map { relayRequest ->
+            .onEach { relayRequest ->
                 supervisorScope { publishSubscriptionAcknowledgement(relayRequest.id) }
-                relayRequest
             }
 
     fun publishPairingApproval(topic: Topic, preSettlementPairingApproval: PreSettlementPairing.Approve) {
@@ -93,12 +97,19 @@ class WakuRelayRepository internal constructor(
     private fun getServerUrl(): String =
         ((if (useTLs) "wss" else "ws") + "://$hostName/?apiKey=$apiKey").trim()
 
+    class RelayFactory(
+        val useTls: Boolean,
+        val hostName: String,
+        val apiKey: String,
+        val application: Application
+    )
+
     companion object {
         private const val TIMEOUT_TIME: Long = 5000L
         private const val DEFAULT_BACKOFF_MINUTES: Long = 5L
         private const val REPLAY: Int = 1
 
-        fun initRemote(relayInitParams: RelayInitParams) = with(relayInitParams) {
+        fun initRemote(relayFactory: RelayFactory) = with(relayFactory) {
             WakuRelayRepository(useTls, hostName, apiKey, application)
         }
     }
