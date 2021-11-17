@@ -18,10 +18,6 @@ import timber.log.Timber
 object WalletConnectClient {
     private val engineInteractor = EngineInteractor()
     private var walletConnectListener: WalletConnectClientListener? = null
-    private var pairingListener: WalletConnectClientListeners.Pairing? = null
-    private var sessionApproveListener: WalletConnectClientListeners.SessionApprove? = null
-    private var sessionRejectListener: WalletConnectClientListeners.SessionReject? = null
-    private var sessionDeleteListener: WalletConnectClientListeners.SessionDelete? = null
 
     init {
         Timber.plant(Timber.DebugTree())
@@ -52,10 +48,9 @@ object WalletConnectClient {
         pairingParams: ClientTypes.PairParams,
         listener: WalletConnectClientListeners.Pairing
     ) {
-        pairingListener = listener
         engineInteractor.pair(pairingParams.uri) { result ->
             result.fold(
-                onSuccess = { topic -> listener.onSuccess(WalletConnectClientData.SettledPairing(topic as String)) },
+                onSuccess = { topic -> listener.onSuccess(WalletConnectClientData.SettledPairing(topic)) },
                 onFailure = { error -> listener.onError(error) }
             )
         }
@@ -65,10 +60,9 @@ object WalletConnectClient {
         approveParams: ClientTypes.ApproveParams,
         listener: WalletConnectClientListeners.SessionApprove
     ) = with(approveParams) {
-        sessionApproveListener = listener
         engineInteractor.approve(proposal.toEngineSessionProposal(), accounts) { result ->
             result.fold(
-                onSuccess = { settledSession -> listener.onSuccess((settledSession as EngineData.SettledSession).toClientSettledSession()) },
+                onSuccess = { settledSession -> listener.onSuccess(settledSession.toClientSettledSession()) },
                 onFailure = { error -> listener.onError(error) }
             )
         }
@@ -78,10 +72,9 @@ object WalletConnectClient {
         rejectParams: ClientTypes.RejectParams,
         listener: WalletConnectClientListeners.SessionReject
     ) = with(rejectParams) {
-        sessionRejectListener = listener
         engineInteractor.reject(rejectionReason, proposalTopic) { result ->
             result.fold(
-                onSuccess = { topic -> listener.onSuccess(WalletConnectClientData.RejectedSession(topic as String)) },
+                onSuccess = { topic -> listener.onSuccess(WalletConnectClientData.RejectedSession(topic)) },
                 onFailure = { error -> listener.onError(error) }
             )
         }
@@ -91,10 +84,9 @@ object WalletConnectClient {
         disconnectParams: ClientTypes.DisconnectParams,
         listener: WalletConnectClientListeners.SessionDelete
     ) = with(disconnectParams) {
-        sessionDeleteListener = listener
         engineInteractor.disconnect(topic, reason) { result ->
             result.fold(
-                onSuccess = { topic -> listener.onSuccess(WalletConnectClientData.DeletedSession(topic as String)) },
+                onSuccess = { topic -> listener.onSuccess(WalletConnectClientData.DeletedSession(topic)) },
                 onFailure = { error -> listener.onError(error) }
             )
         }

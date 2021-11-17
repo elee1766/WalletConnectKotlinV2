@@ -2,7 +2,7 @@ package org.walletconnect.walletconnectv2.relay.data.model
 
 import com.squareup.moshi.Json
 
-data class Request(
+data class JsonRpcRequest(
     @Json(name = "id")
     val id: Long,
     @Json(name = "jsonrpc")

@@ -1,17 +1,10 @@
 package org.walletconnect.walletconnectv2.engine.serailising
 
-import com.squareup.moshi.JsonDataException
-import com.squareup.moshi.Moshi
+import org.walletconnect.walletconnectv2.moshi
 
-class JsonRpcSerializer(val moshi: Moshi) : JsonRpcSerialising {
+inline fun <reified T> trySerialize(type: T): String =
+    moshi.adapter(T::class.java).toJson(type)
 
-    override fun <T> trySerialize(typeClass: Class<T>, type: T): String =
-        moshi.adapter(typeClass).toJson(type)
-
-    override fun <T> tryDeserialize(type: Class<T>, json: String): T? =
-        try {
-            org.walletconnect.walletconnectv2.moshi.adapter(type).fromJson(json)
-        } catch (error: JsonDataException) {
-            null
-        }
+inline fun <reified T> tryDeserialize(json: String): T? {
+    return runCatching { moshi.adapter(T::class.java).fromJson(json) }.getOrNull()
 }

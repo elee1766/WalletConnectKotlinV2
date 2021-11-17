@@ -118,7 +118,7 @@ sealed class Relay {
         ) : Subscription() {
 
             val subscriptionTopic: Topic = params.subscriptionData.topic
-            val encryptionPayload: EncryptionPayload = params.subscriptionData.message.toEncryptionPayload()
+            val message: String = params.subscriptionData.message
 
             @JsonClass(generateAdapter = true)
             data class Params(
